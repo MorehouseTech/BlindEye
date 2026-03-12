@@ -5,3 +5,6 @@ flask-cors
 pymysql
 cryptography
 python-dotenv
+openai
+google-generativeai
+anthropic
