@@ -10,13 +10,19 @@ import AIVisibilityTest from "./pages/AIVisibilityTest";
 export default function App() {
   return (
     <AuthProvider>
+
+      <section className="fixed top-12 left-0 m-4 ">
+        <CreditScore></CreditScore>
+      </section>
+
       <BrowserRouter>
+
+        
         <Navbar />
         <Routes>
           <Route path="/login" element={<Login />} />
-          <Route path="/register" element={<Register />} />
+          <Route path="/register" element={<Register />}/>
           <Route path="/dashboard" element={<Dashboard />} />
-          <Route path="/credit" element={<CreditScore />} />
           <Route path="/visibility" element={<AIVisibilityTest />} />
         </Routes>
       </BrowserRouter>

@@ -5,7 +5,7 @@ import { Link } from "react-router-dom";
 export default function Navbar() {
   const { token, logout } = useAuth();
   return (
-    <nav className="flex items-center justify-between px-6 py-4 bg-gray-900 text-white">
+    <nav className="flex items-center justify-between px-6 py-4 bg-gray-900 text-white border">
       <Link to="/dashboard" className="text-xl font-bold">Blind Eye</Link>
       <div className="flex gap-4">
         {token ? (
@@ -18,6 +18,7 @@ export default function Navbar() {
           <>
             <Link to="/login">Login</Link>
             <Link to="/register">Register</Link>
+            <Link to="/credit">CreditScore</Link>
           </>
         )}
       </div>
