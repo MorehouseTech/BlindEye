@@ -127,20 +127,20 @@ This is where backend engineers write their actual feature logic. The Flask rout
 ```
 src/
 ├── api/
-│   └── client.js         # Central axios instance. All API calls go through here.
+│   └── client.ts         # Central axios instance. All API calls go through here.
 ├── context/
-│   └── AuthContext.jsx   # Stores the JWT token and exposes login/logout to the whole app.
+│   └── AuthContext.tsx   # Stores the JWT token and exposes login/logout to the whole app.
 ├── components/
-│   └── Navbar.jsx        # Shared nav bar. Add shared components here.
+│   └── Navbar.tsx        # Shared nav bar. Add shared components here.
 └── pages/
-    ├── Login.jsx
-    ├── Register.jsx
-    ├── Dashboard.jsx
-    ├── CreditScore.jsx         # Feature 3 frontend — build here
-    └── AIVisibilityTest.jsx    # Feature 4 frontend — build here
+    ├── Login.tsx
+    ├── Register.tsx
+    ├── Dashboard.tsx
+    ├── CreditScore.tsx         # Feature 3 frontend — build here
+    └── AIVisibilityTest.tsx    # Feature 4 frontend — build here
 ```
 
-Pages are where each frontend engineer builds their feature UI. Components are shared pieces used across multiple pages. The `api/client.js` file is a pre-configured axios instance that automatically attaches the JWT token to every request — always use this instead of calling axios directly.
+Pages are where each frontend engineer builds their feature UI. Components are shared pieces used across multiple pages. The `api/client.ts` file is a pre-configured axios instance that automatically attaches the JWT token to every request — always use this instead of calling axios directly.
 
 ---
 
@@ -157,7 +157,7 @@ Pages are where each frontend engineer builds their feature UI. Components are s
 4. Test your endpoint with: `curl -H "Authorization: Bearer <token>" http://localhost:5000/credit/score`
 
 **Frontend engineer — start here:**
-1. Open `frontend/src/pages/CreditScore.jsx`
+1. Open `frontend/src/pages/CreditScore.tsx`
 2. Use `client.get('/credit/score')` from `../api/client` to fetch the score on page load
 3. Display the score and the breakdown — a score card and a breakdown chart work well here
 4. MUI components you'll probably want: `Card`, `LinearProgress`, `Typography`, `CircularProgress`
@@ -176,7 +176,7 @@ Pages are where each frontend engineer builds their feature UI. Components are s
 5. Test with: `curl -X POST -H "Authorization: Bearer <token>" -d '{"query": "best project management tools", "brand": "Blind Eye"}' http://localhost:5000/visibility/run`
 
 **Frontend engineer — start here:**
-1. Open `frontend/src/pages/AIVisibilityTest.jsx`
+1. Open `frontend/src/pages/AIVisibilityTest.tsx`
 2. Build a form where the business enters a query and their brand name
 3. On submit, call `client.post('/visibility/run', { query, brand_name })` and display the results
 4. You want to show: which AI platforms mentioned the brand, competitor mentions, and any flagged hallucinations with their severity
