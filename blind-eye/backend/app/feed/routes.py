@@ -1,7 +1,10 @@
 # Social Feed routes — User-facing product discovery feed.
 # GET /feed/posts — returns a feed of product posts from businesses.
-# POST /feed/like — like a post (local state, no persistence).
+# POST /feed/like — like a post, records interaction for recommendation engine.
+import logging
 from flask import Blueprint, request, jsonify
+
+logger = logging.getLogger("blindeye.feed")
 
 feed_bp = Blueprint("feed", __name__)
 
@@ -177,6 +180,16 @@ def get_feed_posts():
         posts = [p for p in posts if p.get("businessSize") == size]
 
     if search:
+        # Record the search query for business-side suggested queries
+        try:
+            from ..extensions import db
+            from ..models import UserSearch
+            db.session.add(UserSearch(search_text=search, category=category or "General"))
+            db.session.commit()
+            logger.info("Recorded user search: '%s'", search)
+        except Exception as e:
+            logger.warning("Failed to record search: %s", e)
+
         posts = [
             p for p in posts
             if search in p["productName"].lower()
@@ -190,11 +203,27 @@ def get_feed_posts():
 
 @feed_bp.route("/like", methods=["POST"])
 def like_post():
-    """Like a post (no persistence, just acknowledges)."""
+    """Like a post — records interaction for recommendation engine."""
     data = request.get_json() or {}
     post_id = data.get("post_id")
     if not post_id:
         return jsonify({"error": "post_id is required"}), 400
+
+    # Record interaction in DB for recommendation engine
+    try:
+        from ..extensions import db
+        from ..models import UserInteraction
+        interaction = UserInteraction(
+            user_name="demo_user",
+            post_id=post_id,
+            action="like",
+        )
+        db.session.add(interaction)
+        db.session.commit()
+        logger.info("Recorded like interaction: post_id=%s", post_id)
+    except Exception as e:
+        logger.warning("Failed to record interaction: %s", e)
+
     return jsonify({"success": True, "post_id": post_id})
 
 

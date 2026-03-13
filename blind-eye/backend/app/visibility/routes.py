@@ -5,6 +5,7 @@
 import logging
 from datetime import datetime, timezone
 from flask import Blueprint, request, jsonify
+from ..extensions import db
 from ..ai_service import run_visibility_for_query, has_api_keys
 
 logger = logging.getLogger("blindeye.visibility")
@@ -126,7 +127,40 @@ def _build_overall(platforms: dict) -> tuple[int, str]:
 
 @visibility_bp.route("/suggested-queries", methods=["GET"])
 def get_suggested_queries():
-    """Return popular consumer search queries relevant to this business."""
+    """Return popular consumer search queries — sourced from DB user searches."""
+    try:
+        from ..models import UserSearch
+        from sqlalchemy import func
+
+        # Aggregate searches: count occurrences, order by popularity
+        rows = (
+            db.session.query(
+                UserSearch.search_text,
+                UserSearch.category,
+                func.count().label("cnt"),
+            )
+            .group_by(UserSearch.search_text, UserSearch.category)
+            .order_by(func.count().desc())
+            .limit(10)
+            .all()
+        )
+
+        if rows:
+            queries = [
+                {
+                    "id": i + 1,
+                    "query": r.search_text,
+                    "searchVolume": r.cnt * 320,  # Simulated volume multiplier
+                    "category": r.category or "General",
+                }
+                for i, r in enumerate(rows)
+            ]
+            logger.info("Serving %d suggested queries from DB", len(queries))
+            return jsonify({"queries": queries})
+    except Exception as e:
+        logger.warning("DB query failed for suggested-queries: %s. Using static fallback.", e)
+
+    # Fallback to static list
     return jsonify({"queries": SUGGESTED_QUERIES})
 
 
