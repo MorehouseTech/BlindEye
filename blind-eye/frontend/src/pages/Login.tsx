@@ -17,8 +17,18 @@ export default function Login() {
     setError("");
     setLoading(true);
 
+    const attempt = async (): Promise<Awaited<ReturnType<typeof apiLogin>>> => {
+      try {
+        return await apiLogin(username, password);
+      } catch {
+        // Retry once after a short delay (backend may still be starting)
+        await new Promise((r) => setTimeout(r, 1000));
+        return await apiLogin(username, password);
+      }
+    };
+
     try {
-      const res = await apiLogin(username, password);
+      const res = await attempt();
       if (res.success && res.role && res.name) {
         loginAs(res.role as "business" | "user", res.name);
         navigate(res.role === "business" ? "/dashboard" : "/feed");
@@ -26,7 +36,7 @@ export default function Login() {
         setError(res.error || "Invalid credentials");
       }
     } catch {
-      setError("Could not reach server");
+      setError("Could not reach the backend server. Make sure it is running on port 5002.");
     } finally {
       setLoading(false);
     }
