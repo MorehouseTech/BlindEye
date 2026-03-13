@@ -510,8 +510,11 @@ export default function SocialFeed() {
 
   if (loading) {
     return (
-      <div className="flex-1 flex items-center justify-center bg-black text-white">
-        Loading feed...
+      <div className="flex-1 flex flex-col items-center justify-center bg-black text-white gap-4">
+        <div className="w-24 h-24 rounded-full bg-white/10 animate-pulse" />
+        <div className="w-48 h-4 bg-white/10 rounded animate-pulse" />
+        <div className="w-32 h-3 bg-white/5 rounded animate-pulse" />
+        <p className="text-white/40 text-xs mt-2">Loading feed...</p>
       </div>
     );
   }

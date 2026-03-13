@@ -48,7 +48,23 @@ export default function CreditScore() {
   }, [creditScore]);
 
   if (loading) {
-    return <div className="p-6 text-center text-gray-500">Loading credit score data...</div>;
+    return (
+      <div className="p-6 max-w-4xl mx-auto">
+        <div className="h-7 w-48 bg-gray-200 rounded animate-pulse mb-2" />
+        <div className="h-4 w-72 bg-gray-100 rounded animate-pulse mb-6" />
+        <div className="border rounded-lg p-5 mb-6 flex justify-center">
+          <div className="w-[260px] h-[140px] bg-gray-100 rounded animate-pulse" />
+        </div>
+        <div className="border rounded-lg p-5 mb-6">
+          <div className="h-5 w-24 bg-gray-200 rounded animate-pulse mb-3" />
+          <div className="space-y-2">
+            {[1, 2, 3].map((i) => (
+              <div key={i} className="h-3 bg-gray-100 rounded animate-pulse" />
+            ))}
+          </div>
+        </div>
+      </div>
+    );
   }
 
   return (

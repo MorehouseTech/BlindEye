@@ -170,7 +170,42 @@ export default function AIVisibilityTest() {
         </div>
       </div>
 
-      {error && <p className="text-red-600 text-sm mb-4">{error}</p>}
+      {error && (
+        <div className="border border-red-200 bg-red-50 rounded-lg p-4 mb-4">
+          <p className="text-red-600 text-sm font-medium">{error}</p>
+          <p className="text-red-400 text-xs mt-1">
+            The test will automatically use fallback data if the API is unavailable.
+          </p>
+        </div>
+      )}
+
+      {/* Loading skeleton for visibility test */}
+      {loading && (
+        <div className="space-y-4 mb-6">
+          <div className="border rounded-lg p-5 bg-gray-50">
+            <div className="flex flex-col md:flex-row items-center gap-6">
+              <div className="w-[180px] h-[100px] bg-gray-200 rounded animate-pulse" />
+              <div className="flex-1 space-y-2">
+                <div className="h-3 w-48 bg-gray-200 rounded animate-pulse" />
+                <div className="h-3 bg-gray-100 rounded animate-pulse" />
+                <div className="h-3 w-3/4 bg-gray-100 rounded animate-pulse" />
+              </div>
+            </div>
+          </div>
+          {[1, 2, 3].map((i) => (
+            <div key={i} className="border rounded-lg p-4 border-t-4 border-t-gray-200">
+              <div className="flex justify-between items-center mb-3">
+                <div className="h-5 w-24 bg-gray-200 rounded animate-pulse" />
+                <div className="h-7 w-16 bg-gray-100 rounded animate-pulse" />
+              </div>
+              <div className="space-y-2">
+                <div className="h-3 bg-gray-100 rounded animate-pulse" />
+                <div className="h-3 w-3/4 bg-gray-100 rounded animate-pulse" />
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
 
       {/* Results */}
       {result && (

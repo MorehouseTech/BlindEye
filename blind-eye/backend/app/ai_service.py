@@ -80,14 +80,14 @@ def _call_claude(query: str) -> dict:
     client = anthropic.Anthropic(api_key=api_key, timeout=TIMEOUT_SECONDS)
     start = time.time()
     response = client.messages.create(
-        model="claude-haiku-4-20250414",
+        model="claude-sonnet-4-20250514",
         max_tokens=300,
         system=SYSTEM_PROMPT,
         messages=[{"role": "user", "content": query}],
     )
     latency = int((time.time() - start) * 1000)
     text = response.content[0].text if response.content else ""
-    model = response.model or "claude-haiku-4-20250414"
+    model = response.model or "claude-sonnet-4-20250514"
     return {"rawResponse": text, "model": model, "latencyMs": latency}
 
 
@@ -101,7 +101,7 @@ def _call_gemini(query: str) -> dict:
 
     genai.configure(api_key=api_key)
     model = genai.GenerativeModel(
-        "gemini-2.0-flash",
+        "gemini-2.5-flash-preview-05-20",
         system_instruction=SYSTEM_PROMPT,
     )
     start = time.time()
@@ -114,7 +114,7 @@ def _call_gemini(query: str) -> dict:
     )
     latency = int((time.time() - start) * 1000)
     text = response.text or ""
-    return {"rawResponse": text, "model": "gemini-2.0-flash", "latencyMs": latency}
+    return {"rawResponse": text, "model": "gemini-2.5-flash", "latencyMs": latency}
 
 
 PLATFORM_CALLERS = {
@@ -233,18 +233,22 @@ def run_visibility_for_query(query: str, business_name: str = "Solebound") -> di
             logger.warning("AI CALL FAILED: %s — %s. Using fallback.", platform, str(e))
             return platform, None, True
 
-    # Run all 3 in parallel with ThreadPoolExecutor
+    # Run all 3 in parallel with ThreadPoolExecutor (15s global timeout)
     with ThreadPoolExecutor(max_workers=3) as executor:
         futures = {
             executor.submit(_run_single, name, caller): name
             for name, caller in PLATFORM_CALLERS.items()
         }
-        for future in as_completed(futures):
-            platform, result, used_fallback = future.result()
-            if result:
-                results[platform] = result
-            else:
-                # This platform's result will be filled from dummy data by caller
+        for future in as_completed(futures, timeout=15):
+            try:
+                platform, result, used_fallback = future.result()
+                if result:
+                    results[platform] = result
+                else:
+                    results[platform] = None
+            except Exception as e:
+                platform = futures[future]
+                logger.warning("AI THREAD FAILED: %s — %s", platform, str(e))
                 results[platform] = None
 
     return results

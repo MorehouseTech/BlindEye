@@ -36,11 +36,23 @@ export interface VisibilityResult {
   platforms: Record<string, PlatformResult>;
 }
 
+const FALLBACK_QUERIES: SuggestedQuery[] = [
+  { id: 1, query: "Best sustainable running shoes under $150", searchVolume: 2840, category: "Running Shoes" },
+  { id: 2, query: "Eco-friendly sneakers for everyday wear", searchVolume: 1620, category: "Casual Sneakers" },
+  { id: 3, query: "Top rated organic cotton t-shirts", searchVolume: 1450, category: "Apparel" },
+  { id: 4, query: "Best plant-based protein bars 2026", searchVolume: 3200, category: "Food & Beverage" },
+];
+
 export async function fetchSuggestedQueries(): Promise<SuggestedQuery[]> {
-  const { data } = await client.get<{ queries: SuggestedQuery[] }>(
-    "/visibility/suggested-queries",
-  );
-  return data.queries;
+  try {
+    const { data } = await client.get<{ queries: SuggestedQuery[] }>(
+      "/visibility/suggested-queries",
+    );
+    return data.queries;
+  } catch {
+    console.log("[BlindEye] FALLBACK: Using offline suggested queries");
+    return FALLBACK_QUERIES;
+  }
 }
 
 export async function runVisibilityTest(

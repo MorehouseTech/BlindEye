@@ -79,7 +79,32 @@ export default function Insights() {
   }, []);
 
   if (loading) {
-    return <div className="p-6 text-center text-gray-500">Loading insights...</div>;
+    return (
+      <div className="p-6 max-w-5xl mx-auto">
+        <div className="h-7 w-32 bg-gray-200 rounded animate-pulse mb-2" />
+        <div className="h-4 w-64 bg-gray-100 rounded animate-pulse mb-6" />
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+          {[1, 2, 3, 4].map((i) => (
+            <div key={i} className="border rounded-lg p-4">
+              <div className="h-4 w-20 bg-gray-200 rounded animate-pulse mb-2" />
+              <div className="h-8 w-24 bg-gray-100 rounded animate-pulse" />
+            </div>
+          ))}
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          {[1, 2, 3].map((i) => (
+            <div key={i} className="border rounded-lg p-4">
+              <div className="h-4 w-28 bg-gray-200 rounded animate-pulse mb-3" />
+              <div className="space-y-2">
+                {[1, 2, 3].map((j) => (
+                  <div key={j} className="h-3 bg-gray-100 rounded animate-pulse" />
+                ))}
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    );
   }
 
   return (

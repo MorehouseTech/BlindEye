@@ -178,14 +178,17 @@ def run_visibility_test():
 
     if use_live:
         logger.info("LIVE AI MODE: Running visibility test for '%s'", query)
-        live_results = run_visibility_for_query(query)
+        try:
+            live_results = run_visibility_for_query(query)
+        except Exception as e:
+            logger.warning("LIVE AI FAILED globally: %s. Using all dummy data.", e)
+            live_results = {}
 
         for platform_name in ["ChatGPT", "Claude", "Gemini"]:
             result = live_results.get(platform_name)
             if result:
                 platforms[platform_name] = result
             else:
-                # Fallback for this specific platform
                 logger.warning(
                     "FALLBACK: Using dummy data for %s (query: '%s')",
                     platform_name, query,
