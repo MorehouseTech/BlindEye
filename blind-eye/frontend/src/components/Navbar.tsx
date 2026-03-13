@@ -23,7 +23,7 @@ export default function Navbar() {
           <>
             <Link to="/dashboard" className="hover:text-gray-300">Home</Link>
             <Link to="/insights" className="hover:text-gray-300">Insights</Link>
-            <Link to="/credit" className="hover:text-gray-300">User Metrics</Link>
+            <Link to="/credit" className="hover:text-gray-300">AI Credit Score</Link>
             <Link to="/visibility" className="hover:text-gray-300">Visibility Test</Link>
           </>
         )}

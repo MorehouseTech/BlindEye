@@ -1,10 +1,11 @@
-// Feature 3 — Business Credit Score page.
-// Shows animated score bar, score breakdown, and credit score graph over time.
+// Feature 3 — AI Credit Score page.
+// Shows gauge dial, score breakdown, and credit score graph over time.
 import { useEffect, useState, useMemo } from "react";
 import {
   AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
 } from "recharts";
 import { fetchCreditScore, fetchCreditGraph, type CreditScoreReport } from "../api/creditApi";
+import CreditGauge from "../components/CreditGauge";
 
 function formatDate(eventTime: string): string {
   const d = new Date(eventTime);
@@ -57,23 +58,9 @@ export default function CreditScore() {
         Weekly score based on engagement, AI visibility, and content quality.
       </p>
 
-      {/* Score Bar */}
-      <div className="border rounded-lg p-5 mb-6">
-        <div className="flex justify-between text-xs font-semibold uppercase text-gray-500 mb-1">
-          <span>AI Credit Score</span>
-          <span>{animatedScore}/100</span>
-        </div>
-        <div className="h-4 bg-gray-200 rounded-full overflow-hidden mb-1">
-          <div
-            className="h-full rounded-full bg-gradient-to-r from-red-500 via-amber-400 to-emerald-500 transition-all duration-1000"
-            style={{ width: `${animatedScore}%` }}
-          />
-        </div>
-        <div className="flex justify-between text-xs text-gray-400">
-          <span>Poor</span>
-          <span>Fair</span>
-          <span>Great</span>
-        </div>
+      {/* Score Gauge */}
+      <div className="border rounded-lg p-5 mb-6 flex justify-center">
+        <CreditGauge score={animatedScore} size={260} label="AI Credit Score" />
       </div>
 
       {/* Explanation */}

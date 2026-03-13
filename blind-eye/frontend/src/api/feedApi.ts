@@ -12,6 +12,8 @@ export interface FeedPost {
   likes: number;
   comments: number;
   aiScore: number;
+  mediaGradient?: string;
+  mediaEmoji?: string;
   businessSize?: "local" | "mainstream";
   uniquenessScore?: number;
   relevanceScore?: number;

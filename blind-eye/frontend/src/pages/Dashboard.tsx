@@ -1,30 +1,37 @@
-// Business Dashboard — summary view with platform cards, credit score, and visibility.
+// Business Dashboard — credit gauge hero, AI chatbot visibility, and next steps.
 import { Link } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { useEffect, useState } from "react";
 import { fetchCreditScore, type CreditScoreReport } from "../api/creditApi";
+import CreditGauge from "../components/CreditGauge";
 
 const PLATFORM_SUMMARIES = [
   {
-    name: "GPT",
+    name: "ChatGPT",
+    logo: "G",
+    logoColors: "bg-[#10a37f] text-white",
     score: 58,
     summary:
       "Brand mentioned once in the middle of responses. Price reported incorrectly at $160 vs actual $129.99. Neutral sentiment with partial feature accuracy.",
-    color: "border-t-green-500",
+    color: "border-t-[#10a37f]",
   },
   {
     name: "Gemini",
+    logo: "G",
+    logoColors: "bg-[#4285f4] text-white",
     score: 0,
     summary:
       "Brand was not mentioned in any Gemini responses. Competitors Allbirds and On Running were recommended instead. This is your biggest visibility gap.",
-    color: "border-t-blue-500",
+    color: "border-t-[#4285f4]",
   },
   {
     name: "Claude",
+    logo: "C",
+    logoColors: "bg-[#d97706] text-white",
     score: 91,
     summary:
       "Brand appeared first and was the primary recommendation. Price and features described accurately. Positive trust language used.",
-    color: "border-t-purple-500",
+    color: "border-t-[#d97706]",
   },
 ];
 
@@ -59,7 +66,7 @@ export default function Dashboard() {
       .catch(() => {});
   }, []);
 
-  const creditScore = score?.overallCreditScore ?? "--";
+  const creditScore = score?.overallCreditScore ?? 0;
   const trend = score?.trend;
 
   return (
@@ -77,28 +84,29 @@ export default function Dashboard() {
         </Link>
       </div>
 
-      {/* Top Row: Credit Score + Visibility Chart */}
+      {/* Hero: Credit Score Gauge + Visibility Link */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
         <Link
           to="/credit"
           className="block border rounded-lg p-5 hover:shadow-md transition-shadow"
         >
-          <h2 className="font-semibold text-teal-600 mb-3">Shopping Score</h2>
-          <div className="flex items-end gap-2 mb-2">
-            <span className="text-5xl font-bold">{creditScore}</span>
-            <span className="text-gray-400 text-lg">/100</span>
-            {trend && (
+          <h2 className="font-semibold text-teal-600 mb-2">AI Credit Score</h2>
+          <div className="flex justify-center">
+            <CreditGauge score={creditScore} size={200} />
+          </div>
+          {trend && (
+            <p className="text-center mt-1">
               <span
-                className={`text-sm ml-2 ${
+                className={`text-sm font-medium ${
                   trend.direction === "up" ? "text-green-600" : "text-red-600"
                 }`}
               >
                 {trend.direction === "up" ? "+" : ""}
-                {trend.change} pts
+                {trend.change} pts this week
               </span>
-            )}
-          </div>
-          <p className="text-gray-500 text-sm">
+            </p>
+          )}
+          <p className="text-gray-500 text-xs text-center mt-1">
             Weekly score based on engagement, AI visibility, and content quality.
           </p>
         </Link>
@@ -110,35 +118,70 @@ export default function Dashboard() {
           <h2 className="font-semibold text-teal-600 mb-3">
             AI Visibility Analytics
           </h2>
-          <div className="flex items-end gap-2 mb-2">
-            <span className="text-5xl font-bold">71</span>
-            <span className="text-gray-400 text-lg">/100</span>
-          </div>
-          <p className="text-gray-500 text-sm">
-            Overall visibility across GPT, Claude, and Gemini platforms.
+          <p className="text-gray-600 text-sm mb-4">
+            Run a visibility test to see how AI chatbots describe and recommend
+            your business to consumers.
           </p>
+          <div className="flex items-center gap-3 text-sm text-gray-500">
+            <span>Platforms tested: 3</span>
+            <span>Last run: Today</span>
+          </div>
+          <div className="mt-4 text-center">
+            <span className="inline-block bg-teal-50 text-teal-700 text-xs font-medium px-3 py-1.5 rounded-full">
+              View Full Test Results &rarr;
+            </span>
+          </div>
         </Link>
       </div>
 
-      {/* Platform Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-        {PLATFORM_SUMMARIES.map((platform) => (
-          <div
-            key={platform.name}
-            className={`border rounded-lg p-4 border-t-4 ${platform.color}`}
-          >
-            <div className="flex items-center justify-between mb-2">
-              <h3 className="font-semibold text-lg">{platform.name}</h3>
-              <span className="text-2xl font-bold">{platform.score}</span>
-            </div>
-            <p className="text-sm text-gray-600">{platform.summary}</p>
+      {/* AI Chatbot Visibility Section */}
+      <div className="mb-6">
+        <div className="flex items-center gap-3 mb-1">
+          <h2 className="font-semibold text-lg">AI Chatbot Visibility</h2>
+          <div className="flex gap-1.5">
+            {PLATFORM_SUMMARIES.map((p) => (
+              <span
+                key={p.name}
+                className={`w-6 h-6 rounded-full ${p.logoColors} text-xs flex items-center justify-center font-bold`}
+              >
+                {p.logo}
+              </span>
+            ))}
           </div>
-        ))}
+        </div>
+        <p className="text-gray-500 text-sm mb-4">
+          Simulates how consumers interact with AI chatbots to shop — see how
+          visible your business is across ChatGPT, Gemini, and Claude.
+        </p>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          {PLATFORM_SUMMARIES.map((platform) => (
+            <div
+              key={platform.name}
+              className={`border rounded-lg p-4 border-t-4 ${platform.color}`}
+            >
+              <div className="flex items-center justify-between mb-2">
+                <div className="flex items-center gap-2">
+                  <span
+                    className={`w-7 h-7 rounded-full ${platform.logoColors} text-xs flex items-center justify-center font-bold`}
+                  >
+                    {platform.logo}
+                  </span>
+                  <h3 className="font-semibold">{platform.name}</h3>
+                </div>
+                <span className="text-2xl font-bold">{platform.score}</span>
+              </div>
+              <p className="text-sm text-gray-600">{platform.summary}</p>
+            </div>
+          ))}
+        </div>
       </div>
 
       {/* Recommend Next Steps */}
       <div className="border rounded-lg p-5 mb-6 bg-gray-50">
-        <h2 className="font-semibold text-teal-600 mb-3">Recommend Next Steps</h2>
+        <h2 className="font-semibold text-teal-600 mb-3">
+          Recommended Next Steps
+        </h2>
         <div className="space-y-3">
           {NEXT_STEPS.map((step, i) => (
             <div key={i} className="text-sm">

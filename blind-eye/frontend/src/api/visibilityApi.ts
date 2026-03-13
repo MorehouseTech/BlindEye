@@ -1,10 +1,10 @@
 import client from "./client";
 
-export interface Product {
+export interface SuggestedQuery {
   id: number;
-  name: string;
+  query: string;
+  searchVolume: number;
   category: string;
-  price: number;
 }
 
 export interface HallucinationFlag {
@@ -17,45 +17,37 @@ export interface HallucinationFlag {
 export interface PlatformResult {
   score: number;
   explanation: string;
-  mentionRate: number;
+  mentioned: boolean;
   mentionPosition: string | null;
-  recommendationStrength: number;
+  sentiment: string;
   priceAccuracy: string;
-  priceDelta: number | null;
-  featureAccuracyScore: number;
   hallucinationFlags: HallucinationFlag[];
-  brandSentiment: string;
-  sentimentScore: number;
-  shareOfVoice: number;
-  competitorMentions: Record<string, number>;
-  featureCoveragePct: number;
-  categoryRelevanceScore: number;
-  descriptionMatchScore: number;
-  rawOutput?: {
-    query: string;
-    model: string;
-    response: string;
-    latencyMs: number;
-  };
+  rawResponse: string;
+  model: string;
+  latencyMs: number;
 }
 
 export interface VisibilityResult {
   testId: string;
+  query: string;
   generatedAt: string;
-  data: Array<
-    | { overallScore: { msScore: number; msExplanation: string } }
-    | Record<string, PlatformResult>
-  >;
+  overallScore: number;
+  overallExplanation: string;
+  platforms: Record<string, PlatformResult>;
 }
 
-export async function fetchProducts(): Promise<Product[]> {
-  const { data } = await client.get<{ products: Product[] }>("/visibility/products");
-  return data.products;
+export async function fetchSuggestedQueries(): Promise<SuggestedQuery[]> {
+  const { data } = await client.get<{ queries: SuggestedQuery[] }>(
+    "/visibility/suggested-queries",
+  );
+  return data.queries;
 }
 
-export async function runVisibilityTest(productId: number): Promise<VisibilityResult> {
+export async function runVisibilityTest(
+  query: string,
+): Promise<VisibilityResult> {
   const { data } = await client.post<VisibilityResult>("/visibility/run", {
-    product_id: productId,
+    query,
   });
   return data;
 }
