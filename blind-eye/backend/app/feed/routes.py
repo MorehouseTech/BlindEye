@@ -19,6 +19,9 @@ DUMMY_FEED_POSTS = [
         "comments": 28,
         "aiScore": 71,
         "imageUrl": None,
+        "businessSize": "local",
+        "uniquenessScore": 82,
+        "relevanceScore": 91,
     },
     {
         "id": 2,
@@ -33,6 +36,9 @@ DUMMY_FEED_POSTS = [
         "comments": 45,
         "aiScore": 85,
         "imageUrl": None,
+        "businessSize": "local",
+        "uniquenessScore": 67,
+        "relevanceScore": 78,
     },
     {
         "id": 3,
@@ -47,6 +53,9 @@ DUMMY_FEED_POSTS = [
         "comments": 15,
         "aiScore": 62,
         "imageUrl": None,
+        "businessSize": "local",
+        "uniquenessScore": 74,
+        "relevanceScore": 65,
     },
     {
         "id": 4,
@@ -61,6 +70,9 @@ DUMMY_FEED_POSTS = [
         "comments": 72,
         "aiScore": 45,
         "imageUrl": None,
+        "businessSize": "mainstream",
+        "uniquenessScore": 35,
+        "relevanceScore": 88,
     },
     {
         "id": 5,
@@ -75,6 +87,9 @@ DUMMY_FEED_POSTS = [
         "comments": 11,
         "aiScore": 38,
         "imageUrl": None,
+        "businessSize": "local",
+        "uniquenessScore": 89,
+        "relevanceScore": 52,
     },
     {
         "id": 6,
@@ -89,6 +104,43 @@ DUMMY_FEED_POSTS = [
         "comments": 33,
         "aiScore": 55,
         "imageUrl": None,
+        "businessSize": "local",
+        "uniquenessScore": 71,
+        "relevanceScore": 83,
+    },
+    {
+        "id": 7,
+        "businessName": "Nike",
+        "businessLogo": "NK",
+        "productName": "Air Max 90",
+        "category": "Running Shoes",
+        "price": 130.00,
+        "description": "Classic Air Max 90 with visible Air cushioning. Leather and mesh upper, rubber waffle outsole.",
+        "tags": ["running", "classic", "air-max", "sneakers"],
+        "likes": 2341,
+        "comments": 187,
+        "aiScore": 94,
+        "imageUrl": None,
+        "businessSize": "mainstream",
+        "uniquenessScore": 22,
+        "relevanceScore": 95,
+    },
+    {
+        "id": 8,
+        "businessName": "Adidas",
+        "businessLogo": "AD",
+        "productName": "Ultraboost 24",
+        "category": "Running Shoes",
+        "price": 190.00,
+        "description": "Premium running shoe with BOOST midsole technology. Primeknit+ upper, Continental rubber outsole.",
+        "tags": ["running", "boost", "premium", "performance"],
+        "likes": 1876,
+        "comments": 142,
+        "aiScore": 91,
+        "imageUrl": None,
+        "businessSize": "mainstream",
+        "uniquenessScore": 28,
+        "relevanceScore": 92,
     },
 ]
 
@@ -98,11 +150,15 @@ def get_feed_posts():
     """Return the social feed of product posts."""
     category = request.args.get("category")
     search = request.args.get("search", "").lower()
+    size = request.args.get("size")  # "local" or "mainstream" for Blind Spot
 
     posts = DUMMY_FEED_POSTS
 
     if category and category != "All":
         posts = [p for p in posts if p["category"] == category]
+
+    if size and size in ("local", "mainstream"):
+        posts = [p for p in posts if p.get("businessSize") == size]
 
     if search:
         posts = [

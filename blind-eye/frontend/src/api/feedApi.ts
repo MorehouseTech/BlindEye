@@ -12,12 +12,20 @@ export interface FeedPost {
   likes: number;
   comments: number;
   aiScore: number;
+  businessSize?: "local" | "mainstream";
+  uniquenessScore?: number;
+  relevanceScore?: number;
 }
 
-export async function fetchFeedPosts(category?: string, search?: string): Promise<FeedPost[]> {
+export async function fetchFeedPosts(
+  category?: string,
+  search?: string,
+  size?: "local" | "mainstream",
+): Promise<FeedPost[]> {
   const params: Record<string, string> = {};
   if (category && category !== "All") params.category = category;
   if (search) params.search = search;
+  if (size) params.size = size;
 
   const { data } = await client.get<{ posts: FeedPost[] }>("/feed/posts", { params });
   return data.posts;

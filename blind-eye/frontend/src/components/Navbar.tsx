@@ -21,13 +21,11 @@ export default function Navbar() {
       <div className="flex items-center gap-4">
         {role === "business" && (
           <>
-            <Link to="/dashboard" className="hover:text-gray-300">Dashboard</Link>
-            <Link to="/credit" className="hover:text-gray-300">Credit Score</Link>
+            <Link to="/dashboard" className="hover:text-gray-300">Home</Link>
+            <Link to="/insights" className="hover:text-gray-300">Insights</Link>
+            <Link to="/credit" className="hover:text-gray-300">User Metrics</Link>
             <Link to="/visibility" className="hover:text-gray-300">Visibility Test</Link>
           </>
-        )}
-        {role === "user" && (
-          <Link to="/feed" className="hover:text-gray-300">Feed</Link>
         )}
         <span className="text-gray-400">|</span>
         <span className="text-gray-400">{name}</span>
