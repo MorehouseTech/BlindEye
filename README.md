@@ -20,6 +20,11 @@ The app is fully deployed and live. No local setup required to try it.
 
 Both services are running on Google Cloud Run with auto-scaling. The backend connects to OpenAI, Anthropic, and Google Gemini APIs in real time. There is no mock data in production; the AI visibility tests hit real models and return real responses.
 
+**Demo Video**  
+
+https://github.com/user-attachments/assets/14b6b2d7-cbde-4805-ad63-da047e725058
+
+
 ### How to tell if the app started successfully
 
 Open [https://blindeye.app](https://blindeye.app) in your browser (works on mobile and desktop). You should see a login screen. Register a new account or log in, and you'll land on the consumer feed with product videos auto-playing. That means everything is working.
