@@ -1,4 +1,5 @@
 openai
-google-generativeai
+google-genai
+anthropic
 python-dotenv
 requests

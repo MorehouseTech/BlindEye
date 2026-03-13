@@ -5,3 +5,8 @@ flask-cors
 pymysql
 cryptography
 python-dotenv
+openai
+google-genai
+anthropic
+httpx
+tavily-python

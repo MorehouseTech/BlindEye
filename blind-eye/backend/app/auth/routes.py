@@ -24,5 +24,5 @@ def login():
     business = Business.query.filter_by(email=data["email"]).first()
     if not business or not check_password_hash(business.password_hash, data["password"]):
         return jsonify({"error": "Invalid credentials"}), 401
-    token = create_access_token(identity=business.id)
+    token = create_access_token(identity=str(business.id))
     return jsonify({"token": token}), 200
