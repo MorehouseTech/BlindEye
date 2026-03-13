@@ -1,47 +1,67 @@
+import {
+	fetchCreditScore,
+	type CreditScoreReport,
+} from "../api/client";
 
-const score_json = [
-{ 
-    Overall_score: {
-
-    Score: 80,
-    Explanation: "Hello"
+export interface ScoreData {
+	score: number;
+	explanation: string;
 }
-},
 
-{
-    GPT: {
-		Score : 2,
-		Explanation: "None",
-		Metric1: "metric 1",
-		Metric2: "metric 2",
-		Metrict3: "metric 3",
+const defaultScoreData: ScoreData = {
+	score: 40,
+	explanation: "No explanation available.",
+};
+
+function getOverallExplanation(report?: CreditScoreReport): string {
+	if (!report) {
+		return defaultScoreData.explanation;
 	}
-},
 
-{claude : 
-{
-	Score : 3,
-		Explanation: "none",
-		Metric1: "metric 1",
-		Metric2: "metric 2",
-		Metrict3: "metric 3",
+	if (
+		typeof report.overallExplanation === "string" &&
+		report.overallExplanation.trim().length > 0
+	) {
+		return report.overallExplanation.trim();
+	}
+
+	if (Array.isArray(report.recommendations)) {
+		const cleanedRecommendations = report.recommendations
+			.map((item) => item.trim())
+			.filter((item) => item.length > 0);
+
+		if (cleanedRecommendations.length > 0) {
+			return cleanedRecommendations.join("\n");
+		}
+	}
+
+	return defaultScoreData.explanation;
 }
 
-},
+function toValidScore(value: unknown): number | null {
+	const parsed = Number(value);
+	if (!Number.isFinite(parsed) || parsed < 0) {
+		return null;
+	}
 
-{
-    Gemini: {
-	Score : 4,
-		Explanation: "None",
-		Metric1: "Metric 1",
-		Metric2: "Metric 2",
-		Metrict3: "Metric 3",
+	return parsed;
 }
 
-},
+export async function getOverallScoreData(): Promise<ScoreData> {
+	try {
+		const response = await fetchCreditScore();
+		const report = response.creditScoreReport;
+		const score = toValidScore(report?.overallCreditScore) ?? defaultScoreData.score;
 
-]
+		return {
+			score,
+			explanation: getOverallExplanation(report),
+		};
+	} catch (error) {
+		console.error("Unable to load credit score data", error);
+		return defaultScoreData;
+	}
+}
 
-
-export default score_json
+export default defaultScoreData;
 
