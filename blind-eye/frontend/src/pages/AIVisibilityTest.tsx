@@ -1,6 +1,7 @@
 // Feature 4 — AI Visibility Test page.
 // Business-focused: test how visible your business is for real consumer queries.
 import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 import {
   fetchSuggestedQueries,
   runVisibilityTest,
@@ -10,10 +11,10 @@ import {
 } from "../api/visibilityApi";
 import CreditGauge from "../components/CreditGauge";
 
-const PLATFORM_COLORS: Record<string, { bg: string; border: string }> = {
-  ChatGPT: { bg: "bg-[#10a37f]/10", border: "border-t-[#10a37f]" },
-  Claude: { bg: "bg-[#d97706]/10", border: "border-t-[#d97706]" },
-  Gemini: { bg: "bg-[#4285f4]/10", border: "border-t-[#4285f4]" },
+const PLATFORM_COLORS: Record<string, { bg: string; border: string; logo: string }> = {
+  ChatGPT: { bg: "bg-[#10a37f]/10", border: "border-t-[#10a37f]", logo: "/logos/GPTLogo.png" },
+  Claude: { bg: "bg-[#d97706]/10", border: "border-t-[#d97706]", logo: "/logos/ClaudeLogo.png" },
+  Gemini: { bg: "bg-[#4285f4]/10", border: "border-t-[#4285f4]", logo: "/logos/GeminiLogo.png" },
 };
 
 function PlatformCard({
@@ -31,7 +32,10 @@ function PlatformCard({
   return (
     <div className={`border rounded-lg p-4 border-t-4 ${colors.border}`}>
       <div className="flex justify-between items-center mb-2">
-        <h3 className="font-semibold text-lg">{name}</h3>
+        <div className="flex items-center gap-2">
+          <img src={colors.logo} alt={name} className="w-7 h-7 rounded-full object-cover" onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }} />
+          <h3 className="font-semibold text-lg">{name}</h3>
+        </div>
         <span className="text-2xl font-bold">{data.score}/100</span>
       </div>
       <p className="text-sm text-gray-600 mb-3">{data.explanation}</p>
@@ -119,6 +123,7 @@ export default function AIVisibilityTest() {
 
   return (
     <div className="p-6 max-w-4xl mx-auto">
+      <Link to="/dashboard" className="text-sm text-teal-600 hover:text-teal-800 mb-3 inline-block">&larr; Back to Dashboard</Link>
       <h1 className="text-2xl font-bold mb-1">AI Visibility Test</h1>
       <p className="text-gray-500 text-sm mb-6">
         Test how visible your business is when consumers ask AI chatbots

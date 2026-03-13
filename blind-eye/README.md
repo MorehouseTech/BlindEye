@@ -1,205 +1,180 @@
-# Blind Eye
+# BlindEye
 
-A social commerce platform that gives businesses visibility into how AI recommends their products, and gives users transparent, interest-based product discovery.
+**HBCU Battle of the Brains 2026** | Morehouse College
+
+BlindEye is a dual-sided platform that tackles a problem most businesses don't even know they have: AI chatbots are already recommending (or ignoring) their products to millions of consumers, and nobody is tracking what those chatbots actually say.
+
+On the **business side**, BlindEye gives companies a dashboard showing how ChatGPT, Gemini, and Claude represent their brand. It scores their AI visibility, flags hallucinated product details, and tells them exactly where they're being left out of the conversation.
+
+On the **consumer side**, BlindEye is a TikTok-style product discovery feed. Users scroll through real product videos, and when something catches their eye they can tap to reveal what the AI chatbots actually said about that product behind the scenes. We call this the "Blind Spot" overlay. The idea is simple: if AI is shaping what people buy, people should be able to see how.
+
+The app is fully deployed and live. No local setup required to try it.
+
+## Live App
+
+**Primary URL:** [https://blindeye.app](https://blindeye.app)
+
+**Backup (direct Cloud Run links):**
+- Frontend: https://blindeye-web-266143963829.us-central1.run.app
+- Backend API: https://blindeye-api-266143963829.us-central1.run.app
+
+Both services are running on Google Cloud Run with auto-scaling. The backend connects to OpenAI, Anthropic, and Google Gemini APIs in real time. There is no mock data in production; the AI visibility tests hit real models and return real responses.
+
+### How to tell if the app started successfully
+
+Open [https://blindeye.app](https://blindeye.app) in your browser (works on mobile and desktop). You should see a login screen. Register a new account or log in, and you'll land on the consumer feed with product videos auto-playing. That means everything is working.
+
+If you want to verify the backend is healthy, hit this endpoint:
+```
+curl https://blindeye-api-266143963829.us-central1.run.app/feed/posts
+```
+You should get back a JSON array of posts. If you see data, the API is up.
 
 ---
 
-## Table of Contents
-1. [How to Run the App](#getting-started)
-2. [Branch Strategy](#branch-strategy)
-3. [Repo Structure Explained](#repo-structure-explained)
-4. [Team Instructions](#team-instructions)
-   - [Feature 3 — Credit Score](#feature-3-team-credit-score)
-   - [Feature 4 — AI Visibility Test](#feature-4-team-ai-visibility-test)
-5. [Ngrok Setup](#ngrok-temporary-public-endpoints)
-6. [Rules](#rules)
+## What the App Does
+
+### Consumer Side (the feed)
+- Scroll through a vertical product discovery feed, similar to TikTok
+- Each card shows a real product video with brand, price, and AI trust signals
+- Tap "Blind Spot" on any card to see what ChatGPT, Gemini, and Claude actually said about that product
+- Search for products by keyword and browse by category
+
+### Business Side (the dashboard)
+- **AI Credit Score**: An overall score (0-100) representing how visible and accurately represented your business is across AI platforms
+- **Chatbot Visibility Cards**: See how each AI platform (ChatGPT, Gemini, Claude) describes your brand, including whether you're mentioned, your position in recommendations, sentiment, and price accuracy
+- **AI Visibility Test**: Type any consumer query (like "best running shoes under $150") and see exactly how each AI chatbot responds in real time. The app shows scores per platform, flags hallucinations, and tells you your mention position
+- **Insights**: Trend data over time showing engagement, AI mentions, and visibility changes
+- **Test Transparency**: Every AI visibility test shows the exact prompt that was sent to each model, the model version used, and the response latency. Nothing is hidden.
+
+### For Judges: Navigating the App
+
+1. Open the app and register an account (any email/password works)
+2. You'll land on the **consumer feed**. Scroll through products. Tap "Blind Spot" on a card to see the AI transparency overlay.
+3. Tap the briefcase icon in the bottom nav to switch to the **business dashboard**
+4. From the dashboard, tap "Generate AI Test" or the "AI Visibility Analytics" card
+5. On the visibility test page, type a real query like "best coffee shops in Atlanta" or click one of the suggested queries
+6. Watch the results come in across all three AI platforms with scores, hallucination flags, and raw responses
 
 ---
 
-## Getting Started
+## Tech Stack
 
-### Requirements
-- Docker + Docker Compose
-- Node 18+
+| Layer | Technology |
+|-------|-----------|
+| Frontend | React 18, TypeScript, Vite, Tailwind CSS, Recharts |
+| Backend | Python 3.11, Flask, SQLAlchemy, JWT auth |
+| AI Integration | OpenAI API (GPT-4o-mini), Anthropic API (Claude), Google Gemini API |
+| Database | SQLite (with seed data for demo) |
+| Deployment | Google Cloud Run (containerized with Docker), nginx |
+| Domain | Custom domain via blindeye.app |
+
+The frontend is a single-page app built with React and TypeScript, bundled by Vite, and served by nginx in a Docker container. The backend is a Flask API running behind gunicorn, also containerized. Both containers are deployed to Cloud Run in `us-central1` with auto-scaling enabled. The AI visibility test makes real-time parallel calls to all three AI providers and compares their responses against known product data to detect hallucinations.
+
+---
+
+## Running Locally
+
+If the live app is down for any reason, you can run everything locally. We included a `run.sh` script that handles both the backend and frontend setup.
+
+### Prerequisites
 - Python 3.11+
+- Node.js 18+
+- API keys for OpenAI, Anthropic, and Gemini (optional, the app falls back to cached/demo data without them)
 
-### Running with Docker (recommended)
-This spins up the frontend, backend, and MySQL database all at once.
+### Quick Start
+
 ```bash
-cp .env.example .env
-# open .env and fill in your API keys and secrets
-docker-compose up --build
+git clone https://github.com/MorehouseTech/BlindEye.git
+cd BlindEye
+chmod +x run.sh
+./run.sh
 ```
 
-Frontend: http://localhost:5173
-Backend: http://localhost:5000
+The script will:
+1. Create a Python virtual environment and install backend dependencies
+2. Start the Flask backend on port 5002
+3. Install frontend npm packages
+4. Start the Vite dev server on port 5173
+5. Print the local URLs when everything is ready
 
-### Running without Docker
-If you don't want to deal with Docker during development, you can run each piece separately.
+Once you see `Frontend running at http://localhost:5173` in your terminal, open that URL in a browser.
 
+### Manual Setup (if the script doesn't work on your machine)
+
+**Terminal 1: Backend**
 ```bash
-# Terminal 1 — Frontend
-cd frontend
-npm install
-npm run dev
-
-# Terminal 2 — Backend
 cd backend
+python3 -m venv .venv
+source .venv/bin/activate
 pip install -r requirements.txt
 python run.py
 ```
 
-You'll need MySQL running locally and your DATABASE_URL set correctly in `.env`.
+**Terminal 2: Frontend**
+```bash
+cd frontend
+npm install
+npm run dev
+```
+
+### Environment Variables (optional)
+
+If you want the AI visibility test to make real API calls locally, create a `.env` file in the root:
+
+```
+OPENAI_API_KEY=your-key-here
+ANTHROPIC_API_KEY=your-key-here
+GEMINI_API_KEY=your-key-here
+```
+
+Without these keys, the app still works. It falls back to cached responses and demo data so you can still see every feature.
 
 ---
 
-## Branch Strategy
-
-We have 4 branches. Here's what each one is for and the rule around them.
-
-- `main` — this is the demo branch. Only merge here when something is fully working and ready to show judges. Do not develop directly on this branch.
-- `dev` — this is the shared integration branch. When your feature is working, you merge into dev first. This is how we catch conflicts before they hit main.
-- `feature/credit-score` — this is where the Feature 3 team works. Frontend and backend for the credit score both live here.
-- `feature/ai-visibility-test` — this is where the Feature 4 team works. Frontend and backend for the AI visibility test both live here.
-- `feature/social-feed` — stretch goal, Feature 1
-- `feature/blind-spot` — stretch goal, Feature 2
-
-**The flow is always:** your feature branch → dev → main. Never push directly to dev or main.
-
----
-
-## Repo Structure Explained
+## Project Structure
 
 ```
 blind-eye/
-├── frontend/        # Everything the user sees
-├── backend/         # The API — receives requests, checks auth, sends responses
-└── services/        # The actual logic — credit scoring, AI queries, hallucination detection
+├── backend/                # Flask API
+│   ├── app/
+│   │   ├── auth/           # Login and registration
+│   │   ├── credit/         # AI credit score endpoint
+│   │   ├── feed/           # Product feed endpoint
+│   │   ├── insights/       # Trend data endpoint
+│   │   ├── visibility/     # AI visibility test endpoint
+│   │   ├── ai_service.py   # Calls to OpenAI, Anthropic, Gemini
+│   │   └── models.py       # Database models
+│   ├── Dockerfile
+│   ├── requirements.txt
+│   └── run.py              # Entry point
+├── frontend/               # React SPA
+│   ├── src/
+│   │   ├── api/            # Axios client and API wrappers
+│   │   ├── components/     # Shared components (CreditGauge, Navbar, etc.)
+│   │   ├── context/        # Auth context (JWT token management)
+│   │   └── pages/          # All app pages
+│   ├── public/
+│   │   ├── logos/          # BlindEye and AI platform logos
+│   │   └── videos/         # Compressed product videos
+│   ├── Dockerfile
+│   └── nginx.conf          # Production web server config
+├── run.sh                  # One-command local setup script
+├── docker-compose.yml      # Docker composition (alternative local setup)
+└── .env.example            # Template for environment variables
 ```
-
-### Why three separate folders?
-
-Each folder has one job and one job only. This matters because we have 4 engineers working at the same time, and if everything lived in one place people would constantly be stepping on each other's code.
-
-**`frontend/`** is the React app. It talks to the backend through HTTP requests and never touches the database or AI APIs directly. If you're a frontend engineer, you almost never need to leave this folder.
-
-**`backend/`** is the Flask API. Its only job is to sit between the frontend and the services. It receives a request, checks that the user is authenticated, calls the right service function, and sends the result back. There is no heavy logic here on purpose. Think of it as a traffic controller.
-
-**`services/`** is where the real work happens. The credit score algorithm lives here. The code that calls OpenAI and Gemini lives here. The hallucination detection logic lives here. We split this out from the backend so that when we move to Cloud Run, each service can become its own container without touching the Flask layer. For now they're just Python files being imported by the backend.
 
 ---
 
-### Inside `backend/app/`
+## Team
 
-```
-app/
-├── __init__.py       # Wires everything together. You rarely touch this.
-├── config.py         # Reads environment variables. You rarely touch this.
-├── extensions.py     # Sets up the database and JWT. You never touch this.
-├── models.py         # Database tables. Add new models here when needed.
-├── auth/             # Login and registration logic
-├── credit/           # Feature 3 — credit score endpoint
-└── visibility/       # Feature 4 — AI visibility test endpoint
-```
+Morehouse College, HBCU Battle of the Brains 2026
 
-Each folder inside `app/` is a Flask Blueprint. A Blueprint is just Flask's way of letting you define routes in a separate file so two engineers aren't editing the same thing. `auth/` handles login and register. `credit/` handles the credit score endpoint. `visibility/` handles the visibility test endpoint. They all get registered in `__init__.py` and that's the only place they connect to each other.
-
-The routes in `credit/routes.py` and `visibility/routes.py` are intentionally thin stubs right now. They exist to give you a working endpoint skeleton. Your job as a backend engineer is to fill in the TODO inside each route by calling your service function and returning the result.
-
----
-
-### Inside `services/`
-
-```
-services/
-├── credit_engine/
-│   └── engine.py       # Credit score computation logic
-└── visibility_engine/
-    └── engine.py       # AI query logic + hallucination detection
-```
-
-This is where backend engineers write their actual feature logic. The Flask route calls a function from here, which keeps the route clean and makes it easy to test the logic independently. If you need to add helper files, utility functions, or extra modules for your feature, add them inside your engine folder.
-
----
-
-### Inside `frontend/src/`
-
-```
-src/
-├── api/
-│   └── client.ts         # Central axios instance. All API calls go through here.
-├── context/
-│   └── AuthContext.tsx   # Stores the JWT token and exposes login/logout to the whole app.
-├── components/
-│   └── Navbar.tsx        # Shared nav bar. Add shared components here.
-└── pages/
-    ├── Login.tsx
-    ├── Register.tsx
-    ├── Dashboard.tsx
-    ├── CreditScore.tsx         # Feature 3 frontend — build here
-    └── AIVisibilityTest.tsx    # Feature 4 frontend — build here
-```
-
-Pages are where each frontend engineer builds their feature UI. Components are shared pieces used across multiple pages. The `api/client.ts` file is a pre-configured axios instance that automatically attaches the JWT token to every request — always use this instead of calling axios directly.
-
----
-
-## Team Instructions
-
-### Feature 3 Team — Credit Score
-
-**What you're building:** A weekly credit score for businesses based on engagement signals and AI visibility. Businesses see their score and a breakdown of what's driving it.
-
-**Backend engineer — start here:**
-1. Open `services/credit_engine/engine.py`
-2. Build out the `compute_credit_score(business_id)` function. It should pull engagement data (likes, comments, conversions) from the database and combine them into a score with a breakdown
-3. Once the function returns real data, go to `backend/app/credit/routes.py` and replace the TODO with a call to your function
-4. Test your endpoint with: `curl -H "Authorization: Bearer <token>" http://localhost:5000/credit/score`
-
-**Frontend engineer — start here:**
-1. Open `frontend/src/pages/CreditScore.tsx`
-2. Use `client.get('/credit/score')` from `../api/client` to fetch the score on page load
-3. Display the score and the breakdown — a score card and a breakdown chart work well here
-4. MUI components you'll probably want: `Card`, `LinearProgress`, `Typography`, `CircularProgress`
-
----
-
-### Feature 4 Team — AI Visibility Test
-
-**What you're building:** A tool where businesses enter a shopping query and see how ChatGPT and Gemini respond — whether their brand is mentioned, how they compare to competitors, and whether any product details are wrong.
-
-**Backend engineer — start here:**
-1. Open `services/visibility_engine/engine.py`
-2. Build out `run_visibility_test(query, brand_name)`. It should call the OpenAI API and Gemini API with the query, parse both responses for brand mentions, compare product details against known data, and flag hallucinations with a severity score
-3. Add your API keys to `.env` (OPENAI_API_KEY, GEMINI_API_KEY)
-4. Once working, go to `backend/app/visibility/routes.py` and replace the TODO with a call to your function, passing in the query and brand from the request body
-5. Test with: `curl -X POST -H "Authorization: Bearer <token>" -d '{"query": "best project management tools", "brand": "Blind Eye"}' http://localhost:5000/visibility/run`
-
-**Frontend engineer — start here:**
-1. Open `frontend/src/pages/AIVisibilityTest.tsx`
-2. Build a form where the business enters a query and their brand name
-3. On submit, call `client.post('/visibility/run', { query, brand_name })` and display the results
-4. You want to show: which AI platforms mentioned the brand, competitor mentions, and any flagged hallucinations with their severity
-5. MUI components you'll probably want: `TextField`, `Button`, `Chip`, `Alert`, `Table`
-
----
-
-## Ngrok (temporary public endpoints)
-
-While developing locally, use ngrok to get a public URL for the backend so the frontend can hit it from anywhere.
-
-```bash
-ngrok http 5000
-```
-
-Copy the https URL ngrok gives you and paste it as `VITE_API_URL` in your `.env` file. Restart the frontend after changing this.
-
----
-
-## Rules
-
-- Never commit your `.env` file. It's in `.gitignore` for a reason.
-- Always branch off `dev`, not `main`
-- Always merge into `dev` first, never directly into `main`
-- If you need a new database model, add it to `backend/app/models.py` and tell the team so nobody's migrations conflict
-- If you need a new shared frontend component, add it to `frontend/src/components/` and tell the team
+- Aren Egwuekwe
+- Supreme Constantine
+- Marquelle Waterford
+- Isaiah Johnson
+- Jalen Horton
+- Charles Ryans
+- Omar White-Evans
+- Kanayo Egwuekwe-Maxey

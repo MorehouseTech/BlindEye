@@ -5,6 +5,60 @@ import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { fetchFeedPosts, likePost, type FeedPost } from "../api/feedApi";
 
+/* ── Video mapping by category + product name ── */
+const VIDEO_MAP: Record<string, string[]> = {
+  "Running Shoes": ["/videos/shoe1.mp4", "/videos/shoe2.mp4"],
+  "Hiking Boots": ["/videos/shoe2.mp4", "/videos/shoe1.mp4"],
+  "Apparel": ["/videos/shirt1.mp4"],
+  "Food & Beverage": ["/videos/food1.mp4", "/videos/food2.mp4", "/videos/food3.mp4"],
+  "Electronics": ["/videos/electronics1.mp4", "/videos/electronics2.mp4", "/videos/electronics3.mp4"],
+  "Home Goods": ["/videos/home1.mp4", "/videos/home2.mp4", "/videos/home3.mp4"],
+};
+
+function getVideoForPost(post: FeedPost, index: number): string | null {
+  const vids = VIDEO_MAP[post.category];
+  if (!vids || vids.length === 0) return null;
+  return vids[index % vids.length];
+}
+
+/* ── Video Background Component ── */
+function VideoBackground({ src, gradient, emoji }: { src: string | null; gradient?: string; emoji?: string }) {
+  const [failed, setFailed] = useState(false);
+  const videoRef = useRef<HTMLVideoElement>(null);
+
+  useEffect(() => {
+    setFailed(false);
+    if (videoRef.current) {
+      videoRef.current.load();
+      videoRef.current.play().catch(() => {});
+    }
+  }, [src]);
+
+  if (!src || failed) {
+    return (
+      <div className="absolute inset-0 flex items-center justify-center" style={{ background: gradient || "#1a1a2e" }}>
+        <span className="text-8xl mb-4 drop-shadow-lg">{emoji || "\ud83d\udce6"}</span>
+      </div>
+    );
+  }
+
+  return (
+    <>
+      <video
+        ref={videoRef}
+        src={src}
+        className="absolute inset-0 w-full h-full object-cover"
+        autoPlay
+        loop
+        muted
+        playsInline
+        onError={() => setFailed(true)}
+      />
+      <div className="absolute inset-0 bg-black/20" />
+    </>
+  );
+}
+
 /* ── Onboarding Popup ── */
 function OnboardingPopup({ onDismiss }: { onDismiss: () => void }) {
   return (
@@ -421,6 +475,7 @@ export default function SocialFeed() {
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [showWhyThis, setShowWhyThis] = useState(false);
   const [liked, setLiked] = useState<Set<number>>(new Set());
+  const [searchQuery, setSearchQuery] = useState<string | null>(null);
 
   // Touch tracking
   const touchStartY = useRef(0);
@@ -445,6 +500,7 @@ export default function SocialFeed() {
   const loadPosts = useCallback((search?: string) => {
     setLoading(true);
     setCurrentIndex(0);
+    setSearchQuery(search || null);
     fetchFeedPosts(undefined, search)
       .then(setPosts)
       .catch(() => {})
@@ -521,8 +577,24 @@ export default function SocialFeed() {
 
   if (posts.length === 0) {
     return (
-      <div className="flex-1 flex items-center justify-center bg-black text-white">
-        No products found.
+      <div className="flex-1 flex flex-col items-center justify-center bg-black text-white gap-4 p-6">
+        <span className="text-6xl">&#128269;</span>
+        <h2 className="text-xl font-bold">
+          {searchQuery ? "No results found" : "No products available"}
+        </h2>
+        <p className="text-white/60 text-sm text-center max-w-xs">
+          {searchQuery
+            ? `We couldn\u2019t find any products matching \u201c${searchQuery}\u201d. Try a different search or browse all products.`
+            : "Check back soon for new products!"}
+        </p>
+        {searchQuery && (
+          <button
+            onClick={() => loadPosts()}
+            className="bg-teal-500 text-white px-6 py-2.5 rounded-full font-medium hover:bg-teal-600 mt-2"
+          >
+            Clear Search
+          </button>
+        )}
       </div>
     );
   }
@@ -539,12 +611,13 @@ export default function SocialFeed() {
       {/* ── Full-screen card ── */}
       <div
         className="absolute inset-0 flex flex-col items-center justify-center transition-transform duration-300"
-        style={{ background: post.mediaGradient || "#1a1a2e" }}
       >
-        {/* Large product emoji */}
-        <span className="text-8xl mb-4 drop-shadow-lg">
-          {post.mediaEmoji || "\ud83d\udce6"}
-        </span>
+        {/* Video background with emoji fallback */}
+        <VideoBackground
+          src={getVideoForPost(post, currentIndex)}
+          gradient={post.mediaGradient}
+          emoji={post.mediaEmoji}
+        />
 
         {/* Product info overlay (bottom) */}
         <div className="absolute bottom-0 left-0 right-14 p-5 bg-gradient-to-t from-black/80 via-black/40 to-transparent">
@@ -639,7 +712,7 @@ export default function SocialFeed() {
 
       {/* ── Top HUD ── */}
       <div className="absolute top-0 left-0 right-0 flex items-center justify-between p-4 z-20">
-        <h1 className="text-white font-bold text-lg">BlindEye</h1>
+        <img src="/logos/BlindEyeLogo.png" alt="BlindEye" className="h-8" onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; (e.target as HTMLImageElement).insertAdjacentHTML("afterend", '<span class="text-white font-bold text-lg">BlindEye</span>'); }} />
         <div className="flex items-center gap-2">
           <button
             onClick={() => setShowSearch(true)}

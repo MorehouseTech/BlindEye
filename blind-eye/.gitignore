@@ -42,6 +42,9 @@ Thumbs.db
 *.json.key
 service-account*.json
 
+# Database
+*.db
+
 # Misc
 .cache/
 tmp/

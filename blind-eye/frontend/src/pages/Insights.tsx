@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 import {
   fetchMetrics,
   fetchPipeline,
@@ -109,6 +110,7 @@ export default function Insights() {
 
   return (
     <div className="p-6 max-w-5xl mx-auto">
+      <Link to="/dashboard" className="text-sm text-teal-600 hover:text-teal-800 mb-3 inline-block">&larr; Back to Dashboard</Link>
       <h1 className="text-2xl font-bold mb-1">Insights</h1>
       <p className="text-gray-500 text-sm mb-6">
         Pipeline transparency and engagement analytics for your business.

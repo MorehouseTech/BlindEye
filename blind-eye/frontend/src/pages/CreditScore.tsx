@@ -1,6 +1,7 @@
 // Feature 3 — AI Credit Score page.
 // Shows gauge dial, score breakdown, and credit score graph over time.
 import { useEffect, useState, useMemo } from "react";
+import { Link } from "react-router-dom";
 import {
   AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
 } from "recharts";
@@ -69,6 +70,7 @@ export default function CreditScore() {
 
   return (
     <div className="p-6 max-w-4xl mx-auto">
+      <Link to="/dashboard" className="text-sm text-teal-600 hover:text-teal-800 mb-3 inline-block">&larr; Back to Dashboard</Link>
       <h1 className="text-2xl font-bold mb-1">AI Credit Score</h1>
       <p className="text-gray-500 text-sm mb-6">
         Weekly score based on engagement, AI visibility, and content quality.

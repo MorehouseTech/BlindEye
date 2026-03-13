@@ -72,7 +72,8 @@ function BusinessOnboarding({ onDismiss }: { onDismiss: () => void }) {
 const PLATFORM_SUMMARIES = [
   {
     name: "ChatGPT",
-    logo: "G",
+    logoSrc: "/logos/GPTLogo.png",
+    logoFallback: "G",
     logoColors: "bg-[#10a37f] text-white",
     score: 58,
     summary:
@@ -81,7 +82,8 @@ const PLATFORM_SUMMARIES = [
   },
   {
     name: "Gemini",
-    logo: "G",
+    logoSrc: "/logos/GeminiLogo.png",
+    logoFallback: "G",
     logoColors: "bg-[#4285f4] text-white",
     score: 0,
     summary:
@@ -90,7 +92,8 @@ const PLATFORM_SUMMARIES = [
   },
   {
     name: "Claude",
-    logo: "C",
+    logoSrc: "/logos/ClaudeLogo.png",
+    logoFallback: "C",
     logoColors: "bg-[#d97706] text-white",
     score: 91,
     summary:
@@ -212,12 +215,13 @@ export default function Dashboard() {
           <h2 className="font-semibold text-lg">AI Chatbot Visibility</h2>
           <div className="flex gap-1.5">
             {PLATFORM_SUMMARIES.map((p) => (
-              <span
+              <img
                 key={p.name}
-                className={`w-6 h-6 rounded-full ${p.logoColors} text-xs flex items-center justify-center font-bold`}
-              >
-                {p.logo}
-              </span>
+                src={p.logoSrc}
+                alt={p.name}
+                className="w-6 h-6 rounded-full object-cover"
+                onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }}
+              />
             ))}
           </div>
         </div>
@@ -234,11 +238,12 @@ export default function Dashboard() {
             >
               <div className="flex items-center justify-between mb-2">
                 <div className="flex items-center gap-2">
-                  <span
-                    className={`w-7 h-7 rounded-full ${platform.logoColors} text-xs flex items-center justify-center font-bold`}
-                  >
-                    {platform.logo}
-                  </span>
+                  <img
+                    src={platform.logoSrc}
+                    alt={platform.name}
+                    className="w-7 h-7 rounded-full object-cover"
+                    onError={(e) => { const el = e.target as HTMLImageElement; el.style.display = "none"; el.insertAdjacentHTML("afterend", `<span class="w-7 h-7 rounded-full ${platform.logoColors} text-xs flex items-center justify-center font-bold">${platform.logoFallback}</span>`); }}
+                  />
                   <h3 className="font-semibold">{platform.name}</h3>
                 </div>
                 <span className="text-2xl font-bold">{platform.score}</span>
