@@ -1,8 +1,6 @@
-// Register page. Calls POST /auth/register.
+// Register page — not used in MVP demo, redirects to login.
+import { Navigate } from "react-router-dom";
+
 export default function Register() {
-  return (
-    <div className="flex items-center justify-center h-screen">
-      <p className="text-gray-500">Register page — build here</p>
-    </div>
-  );
+  return <Navigate to="/" replace />;
 }

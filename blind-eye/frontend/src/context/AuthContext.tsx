@@ -1,30 +1,41 @@
-// Handles storing and sharing the JWT token across the app.
-// Wrap components with useAuth() to get the current user and login/logout functions.
+// Simple auth context for MVP demo. No JWT, just stores role + name.
 import { createContext, useContext, useState, ReactNode } from "react";
 
-interface AuthContextType {
-  token: string | null;
-  login: (newToken: string) => void;
+interface AuthState {
+  loggedIn: boolean;
+  role: "business" | "user" | null;
+  name: string;
+}
+
+interface AuthContextType extends AuthState {
+  loginAs: (role: "business" | "user", name: string) => void;
   logout: () => void;
 }
 
 const AuthContext = createContext<AuthContextType | null>(null);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [token, setToken] = useState<string | null>(localStorage.getItem("token"));
+  const [auth, setAuth] = useState<AuthState>(() => {
+    const saved = localStorage.getItem("blindeye_auth");
+    if (saved) {
+      try { return JSON.parse(saved); } catch { /* ignore */ }
+    }
+    return { loggedIn: false, role: null, name: "" };
+  });
 
-  const login = (newToken: string) => {
-    localStorage.setItem("token", newToken);
-    setToken(newToken);
+  const loginAs = (role: "business" | "user", name: string) => {
+    const state = { loggedIn: true, role, name };
+    localStorage.setItem("blindeye_auth", JSON.stringify(state));
+    setAuth(state);
   };
 
   const logout = () => {
-    localStorage.removeItem("token");
-    setToken(null);
+    localStorage.removeItem("blindeye_auth");
+    setAuth({ loggedIn: false, role: null, name: "" });
   };
 
   return (
-    <AuthContext.Provider value={{ token, login, logout }}>
+    <AuthContext.Provider value={{ ...auth, loginAs, logout }}>
       {children}
     </AuthContext.Provider>
   );
