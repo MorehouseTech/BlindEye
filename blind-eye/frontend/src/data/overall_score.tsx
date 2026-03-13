@@ -26,12 +26,12 @@ function getOverallExplanation(report?: CreditScoreReport): string {
 	}
 
 	if (Array.isArray(report.recommendations)) {
-		const cleanedRecommendations = report.recommendations
+		const firstRecommendation = report.recommendations
 			.map((item) => item.trim())
-			.filter((item) => item.length > 0);
+			.find((item) => item.length > 0);
 
-		if (cleanedRecommendations.length > 0) {
-			return cleanedRecommendations.join("\n");
+		if (firstRecommendation) {
+			return firstRecommendation;
 		}
 	}
 

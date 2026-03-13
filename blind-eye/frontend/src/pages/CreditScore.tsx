@@ -19,14 +19,7 @@ function toExplanationBullets(explanation: string): string[] {
     .map((line) => line.replace(/^[-*\u2022\d.)\s]+/, "").trim())
     .filter((line) => line.length > 0);
 
-  if (lineParts.length > 1) {
-    return lineParts;
-  }
-
-  return trimmed
-    .split(/(?<=[.!?])\s+/)
-    .map((segment) => segment.replace(/^[-*\u2022\d.)\s]+/, "").trim())
-    .filter((segment) => segment.length > 0);
+  return lineParts.length > 0 ? lineParts : [trimmed];
 }
 
 export default function CreditScore() {
