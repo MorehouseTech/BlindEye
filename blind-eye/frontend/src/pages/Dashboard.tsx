@@ -5,6 +5,70 @@ import { useEffect, useState } from "react";
 import { fetchCreditScore, type CreditScoreReport } from "../api/creditApi";
 import CreditGauge from "../components/CreditGauge";
 
+/* ── Business Onboarding Popup ── */
+function BusinessOnboarding({ onDismiss }: { onDismiss: () => void }) {
+  return (
+    <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-6">
+      <div className="bg-white rounded-2xl p-6 max-w-md w-full text-center">
+        <h2 className="text-xl font-bold mb-2">Welcome to BlindEye for Business</h2>
+        <p className="text-gray-500 text-sm mb-5">
+          See how AI chatbots represent your brand to consumers
+        </p>
+
+        <div className="space-y-4 text-left mb-6">
+          <div className="flex items-start gap-3">
+            <span className="text-2xl text-teal-500">&#9679;</span>
+            <div>
+              <p className="font-semibold text-sm">AI Credit Score</p>
+              <p className="text-xs text-gray-500">
+                Your overall visibility score across AI platforms, updated weekly
+                based on engagement, content quality, and AI representation.
+              </p>
+            </div>
+          </div>
+          <div className="flex items-start gap-3">
+            <span className="text-2xl text-teal-500">&#9679;</span>
+            <div>
+              <p className="font-semibold text-sm">Chatbot Visibility</p>
+              <p className="text-xs text-gray-500">
+                See how ChatGPT, Gemini, and Claude describe your business —
+                including hallucinations, sentiment, and positioning.
+              </p>
+            </div>
+          </div>
+          <div className="flex items-start gap-3">
+            <span className="text-2xl text-teal-500">&#9679;</span>
+            <div>
+              <p className="font-semibold text-sm">Visibility Test</p>
+              <p className="text-xs text-gray-500">
+                Run real consumer queries against AI chatbots to see if and how
+                your business appears in their responses.
+              </p>
+            </div>
+          </div>
+          <div className="flex items-start gap-3">
+            <span className="text-2xl text-teal-500">&#9679;</span>
+            <div>
+              <p className="font-semibold text-sm">Insights</p>
+              <p className="text-xs text-gray-500">
+                Track trends over time — engagement, AI mentions, and how your
+                visibility changes week to week.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <button
+          onClick={onDismiss}
+          className="w-full bg-teal-500 text-white py-2.5 rounded-lg font-medium hover:bg-teal-600"
+        >
+          Get Started
+        </button>
+      </div>
+    </div>
+  );
+}
+
 const PLATFORM_SUMMARIES = [
   {
     name: "ChatGPT",
@@ -59,12 +123,20 @@ const NEXT_STEPS = [
 export default function Dashboard() {
   const { name } = useAuth();
   const [score, setScore] = useState<CreditScoreReport | null>(null);
+  const [showOnboarding, setShowOnboarding] = useState(false);
 
   useEffect(() => {
     fetchCreditScore()
       .then((res) => setScore(res.creditScoreReport ?? null))
       .catch(() => {});
+    const seen = localStorage.getItem("blindeye_biz_onboarded");
+    if (!seen) setShowOnboarding(true);
   }, []);
+
+  const dismissOnboarding = () => {
+    localStorage.setItem("blindeye_biz_onboarded", "1");
+    setShowOnboarding(false);
+  };
 
   const creditScore = score?.overallCreditScore ?? 0;
   const trend = score?.trend;
@@ -223,6 +295,8 @@ export default function Dashboard() {
           </div>
         </div>
       )}
+
+      {showOnboarding && <BusinessOnboarding onDismiss={dismissOnboarding} />}
     </div>
   );
 }

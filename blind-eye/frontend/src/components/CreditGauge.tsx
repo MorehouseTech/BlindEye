@@ -1,5 +1,5 @@
 // SVG arc gauge for credit/visibility scores — like a FICO score dial.
-// Renders a 180-degree arc from red → yellow → green with an animated needle.
+// Uses stroke-dasharray on a semicircular path for clean arc rendering.
 
 interface CreditGaugeProps {
   score: number; // 0-100
@@ -12,75 +12,95 @@ export default function CreditGauge({
   size = 220,
   label,
 }: CreditGaugeProps) {
+  const strokeW = 18;
   const cx = size / 2;
-  const cy = size / 2 + 10;
-  const r = size / 2 - 20;
+  const cy = size / 2;
+  const r = size / 2 - strokeW / 2 - 8;
+  const circumference = Math.PI * r; // semicircle length
 
-  // Arc from 180° (left) to 0° (right) — a semicircle
-  const startAngle = Math.PI; // left
+  // Arc segments: red (0-40%), yellow (40-70%), green (70-100%)
+  const segments = [
+    { pct: 40, color: "#ef4444" },
+    { pct: 30, color: "#eab308" },
+    { pct: 30, color: "#22c55e" },
+  ];
 
-  // Needle angle: score 0 = 180°, score 100 = 0°
+  // Semicircle path from left to right (180° arc)
+  const arcPath = `M ${cx - r} ${cy} A ${r} ${r} 0 0 1 ${cx + r} ${cy}`;
+
+  // Needle
   const needleAngle = Math.PI - (score / 100) * Math.PI;
-  const needleLen = r - 10;
+  const needleLen = r - 6;
   const nx = cx + needleLen * Math.cos(needleAngle);
   const ny = cy - needleLen * Math.sin(needleAngle);
 
-  // Arc path helper
-  const arcPoint = (angle: number, radius: number) => ({
-    x: cx + radius * Math.cos(angle),
-    y: cy - radius * Math.sin(angle),
-  });
+  let rating = "Poor";
+  let ratingColor = "#ef4444";
+  if (score >= 70) {
+    rating = "Great";
+    ratingColor = "#22c55e";
+  } else if (score >= 40) {
+    rating = "Fair";
+    ratingColor = "#eab308";
+  }
 
-  const outerR = r;
-  const innerR = r - 16;
-
-  // Build the colored arc in 3 segments: red (0-40), yellow (40-70), green (70-100)
-  const segments = [
-    { from: 0, to: 40, color: "#ef4444" },
-    { from: 40, to: 70, color: "#eab308" },
-    { from: 70, to: 100, color: "#22c55e" },
-  ];
-
-  const segmentPaths = segments.map((seg) => {
-    const a1 = startAngle - (seg.from / 100) * Math.PI;
-    const a2 = startAngle - (seg.to / 100) * Math.PI;
-    const p1o = arcPoint(a1, outerR);
-    const p2o = arcPoint(a2, outerR);
-    const p1i = arcPoint(a2, innerR);
-    const p2i = arcPoint(a1, innerR);
-
+  // Build cumulative offsets for each segment
+  let offset = 0;
+  const segmentElements = segments.map((seg, i) => {
+    const segLen = (seg.pct / 100) * circumference;
+    const dashArray = `${segLen} ${circumference - segLen}`;
+    const dashOffset = -offset;
+    offset += segLen;
     return (
       <path
-        key={seg.from}
-        d={`M ${p1o.x} ${p1o.y} A ${outerR} ${outerR} 0 0 0 ${p2o.x} ${p2o.y} L ${p1i.x} ${p1i.y} A ${innerR} ${innerR} 0 0 1 ${p2i.x} ${p2i.y} Z`}
-        fill={seg.color}
+        key={i}
+        d={arcPath}
+        fill="none"
+        stroke={seg.color}
+        strokeWidth={strokeW}
+        strokeDasharray={dashArray}
+        strokeDashoffset={dashOffset}
+        strokeLinecap="butt"
         opacity={0.85}
       />
     );
   });
 
-  // Score label text
-  let rating = "Poor";
-  if (score >= 70) rating = "Great";
-  else if (score >= 40) rating = "Fair";
+  const svgH = size / 2 + 36;
 
   return (
     <div className="flex flex-col items-center">
-      <svg width={size} height={size / 2 + 40} viewBox={`0 0 ${size} ${size / 2 + 40}`}>
-        {segmentPaths}
+      <svg
+        width={size}
+        height={svgH}
+        viewBox={`0 0 ${size} ${svgH}`}
+      >
+        {/* Background track */}
+        <path
+          d={arcPath}
+          fill="none"
+          stroke="#e5e7eb"
+          strokeWidth={strokeW}
+          strokeLinecap="butt"
+        />
+
+        {/* Colored segments */}
+        {segmentElements}
 
         {/* Tick marks */}
         {[0, 25, 50, 75, 100].map((tick) => {
-          const a = startAngle - (tick / 100) * Math.PI;
-          const p1 = arcPoint(a, outerR + 4);
-          const p2 = arcPoint(a, outerR + 10);
+          const a = Math.PI - (tick / 100) * Math.PI;
+          const x1 = cx + (r + strokeW / 2 + 2) * Math.cos(a);
+          const y1 = cy - (r + strokeW / 2 + 2) * Math.sin(a);
+          const x2 = cx + (r + strokeW / 2 + 8) * Math.cos(a);
+          const y2 = cy - (r + strokeW / 2 + 8) * Math.sin(a);
           return (
             <line
               key={tick}
-              x1={p1.x}
-              y1={p1.y}
-              x2={p2.x}
-              y2={p2.y}
+              x1={x1}
+              y1={y1}
+              x2={x2}
+              y2={y2}
               stroke="#9ca3af"
               strokeWidth={1.5}
             />
@@ -102,9 +122,8 @@ export default function CreditGauge({
         {/* Score text */}
         <text
           x={cx}
-          y={cy - 20}
+          y={cy - 22}
           textAnchor="middle"
-          className="text-3xl font-bold"
           fill="#111827"
           fontSize={32}
           fontWeight="bold"
@@ -113,7 +132,7 @@ export default function CreditGauge({
         </text>
         <text
           x={cx}
-          y={cy + 2}
+          y={cy - 2}
           textAnchor="middle"
           fill="#6b7280"
           fontSize={12}
@@ -121,7 +140,9 @@ export default function CreditGauge({
           / 100
         </text>
       </svg>
-      <p className="text-sm font-medium text-gray-600 -mt-2">{rating}</p>
+      <p className="text-sm font-medium -mt-3" style={{ color: ratingColor }}>
+        {rating}
+      </p>
       {label && <p className="text-xs text-gray-400 mt-0.5">{label}</p>}
     </div>
   );

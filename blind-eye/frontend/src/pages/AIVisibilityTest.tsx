@@ -196,6 +196,33 @@ export default function AIVisibilityTest() {
               <PlatformCard key={name} name={name} data={data} />
             ))}
           </div>
+
+          {/* Test Transparency — exact queries used */}
+          <div className="mt-6 border rounded-lg p-5 bg-blue-50/50">
+            <h3 className="font-semibold text-sm mb-1 text-blue-900">
+              Test Transparency
+            </h3>
+            <p className="text-xs text-blue-700 mb-3">
+              Below are the exact prompts sent to each AI platform for this
+              visibility test. BlindEye is fully transparent about how we test.
+            </p>
+            {Object.entries(result.platforms).map(([platformName, data]) => (
+              <details key={platformName} className="text-xs mb-2">
+                <summary className="cursor-pointer text-blue-600 font-medium">
+                  {platformName} ({data.model}) — exact query
+                </summary>
+                <div className="mt-1 bg-white border rounded p-3 text-gray-700">
+                  <p className="font-medium text-gray-500 mb-1">Prompt sent:</p>
+                  <p className="whitespace-pre-wrap font-mono text-xs">
+                    {`User query: "${result.query}"\n\nPlease recommend products or businesses that match this query. Include brand names, pricing, and key features. Be specific about why you recommend each option.`}
+                  </p>
+                  <p className="font-medium text-gray-500 mt-2 mb-1">
+                    Model: {data.model} | Latency: {data.latencyMs}ms
+                  </p>
+                </div>
+              </details>
+            ))}
+          </div>
         </>
       )}
     </div>

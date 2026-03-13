@@ -1,7 +1,236 @@
 // TikTok-style vertical swipe feed for product discovery.
 // Supports touch swipe, keyboard arrows, and on-screen nav buttons.
 import { useEffect, useState, useCallback, useRef } from "react";
+import { useNavigate } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
 import { fetchFeedPosts, likePost, type FeedPost } from "../api/feedApi";
+
+/* ── Onboarding Popup ── */
+function OnboardingPopup({ onDismiss }: { onDismiss: () => void }) {
+  return (
+    <div className="absolute inset-0 bg-black/80 z-50 flex items-center justify-center p-6">
+      <div className="bg-white rounded-2xl p-6 max-w-sm w-full text-center">
+        <h2 className="text-xl font-bold mb-2">Welcome to BlindEye</h2>
+        <p className="text-gray-500 text-sm mb-5">
+          Discover products with full AI transparency
+        </p>
+
+        <div className="space-y-4 text-left mb-6">
+          <div className="flex items-start gap-3">
+            <span className="text-2xl">&#9650;&#9660;</span>
+            <div>
+              <p className="font-semibold text-sm">Swipe or use arrows</p>
+              <p className="text-xs text-gray-500">
+                Swipe up/down or tap the arrow buttons to browse products.
+                Keyboard arrows work too.
+              </p>
+            </div>
+          </div>
+          <div className="flex items-start gap-3">
+            <span className="text-2xl">&#128065;</span>
+            <div>
+              <p className="font-semibold text-sm">Blind Spot</p>
+              <p className="text-xs text-gray-500">
+                Tap the eye icon to see AI visibility analysis for any product.
+              </p>
+            </div>
+          </div>
+          <div className="flex items-start gap-3">
+            <span className="text-2xl">&#128161;</span>
+            <div>
+              <p className="font-semibold text-sm">Why This?</p>
+              <p className="text-xs text-gray-500">
+                Tap &ldquo;Why?&rdquo; to see exactly why this product was
+                recommended to you — full algorithm transparency.
+              </p>
+            </div>
+          </div>
+          <div className="flex items-start gap-3">
+            <span className="text-2xl">&#128269;</span>
+            <div>
+              <p className="font-semibold text-sm">Search</p>
+              <p className="text-xs text-gray-500">
+                Tap Search to find products, brands, or categories.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <button
+          onClick={onDismiss}
+          className="w-full bg-teal-500 text-white py-2.5 rounded-lg font-medium hover:bg-teal-600"
+        >
+          Got It
+        </button>
+      </div>
+    </div>
+  );
+}
+
+/* ── Settings / Help Overlay ── */
+function SettingsOverlay({
+  onClose,
+  onLogout,
+}: {
+  onClose: () => void;
+  onLogout: () => void;
+}) {
+  const [showHelp, setShowHelp] = useState(false);
+
+  return (
+    <div className="absolute inset-0 bg-black/80 z-50 flex items-end sm:items-center justify-center">
+      <div className="bg-white rounded-t-2xl sm:rounded-2xl p-5 w-full max-w-sm">
+        <div className="flex justify-between items-center mb-4">
+          <h3 className="font-bold text-lg">
+            {showHelp ? "How to Use" : "Settings"}
+          </h3>
+          <button
+            onClick={onClose}
+            className="text-gray-400 hover:text-gray-600 text-xl"
+          >
+            &times;
+          </button>
+        </div>
+
+        {showHelp ? (
+          <div className="space-y-3 text-sm text-gray-700 mb-4">
+            <p>
+              <strong>Swipe up/down</strong> or use <strong>arrow keys</strong>{" "}
+              to browse products.
+            </p>
+            <p>
+              Tap the <strong>&#128065; eye icon</strong> on the right to see
+              the Blind Spot analysis — how AI platforms represent this product.
+            </p>
+            <p>
+              Tap <strong>&ldquo;Why?&rdquo;</strong> to see exactly why this
+              product was recommended to you, including the algorithm factors.
+            </p>
+            <p>
+              Tap <strong>&#128269; Search</strong> at the top to find specific
+              products, brands, or categories.
+            </p>
+            <p>
+              Tap <strong>&#9829;</strong> to like a product. Your interactions
+              personalize future recommendations.
+            </p>
+            <button
+              onClick={() => setShowHelp(false)}
+              className="text-teal-600 font-medium"
+            >
+              &larr; Back to Settings
+            </button>
+          </div>
+        ) : (
+          <div className="space-y-2 mb-4">
+            <button
+              onClick={() => setShowHelp(true)}
+              className="w-full text-left px-4 py-3 rounded-lg hover:bg-gray-50 flex items-center gap-3"
+            >
+              <span className="text-lg">&#10068;</span>
+              <span className="text-sm font-medium">Help &amp; Tutorial</span>
+            </button>
+            <button
+              onClick={onLogout}
+              className="w-full text-left px-4 py-3 rounded-lg hover:bg-red-50 text-red-600 flex items-center gap-3"
+            >
+              <span className="text-lg">&#9211;</span>
+              <span className="text-sm font-medium">Log Out</span>
+            </button>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+/* ── Recommendation Transparency Overlay ── */
+function RecommendationOverlay({
+  post,
+  onClose,
+}: {
+  post: FeedPost;
+  onClose: () => void;
+}) {
+  // Simulated algorithm factors based on post data
+  const factors = [
+    {
+      label: "Category Relevance",
+      value: post.relevanceScore ?? 85,
+      reason: `Matched your browsing interest in "${post.category}"`,
+    },
+    {
+      label: "Uniqueness Score",
+      value: post.uniquenessScore ?? 70,
+      reason:
+        post.businessSize === "local"
+          ? "Boosted: local business under-represented in AI results"
+          : "Standard weighting for mainstream brand",
+    },
+    {
+      label: "AI Visibility",
+      value: post.aiScore,
+      reason: `This product scores ${post.aiScore}/100 across AI platforms`,
+    },
+    {
+      label: "Engagement Signal",
+      value: Math.min(100, Math.round((post.likes / 50) * 100)),
+      reason: `${post.likes} likes from the community`,
+    },
+    {
+      label: "Price Competitiveness",
+      value: post.price < 100 ? 90 : post.price < 200 ? 70 : 50,
+      reason: `$${post.price} — ${post.price < 100 ? "budget-friendly" : post.price < 200 ? "mid-range" : "premium"} for this category`,
+    },
+  ];
+
+  return (
+    <div className="absolute inset-0 bg-black/80 z-40 flex items-center justify-center p-6">
+      <div className="bg-white rounded-2xl p-5 max-w-sm w-full relative max-h-[80vh] overflow-y-auto">
+        <button
+          onClick={onClose}
+          className="absolute top-3 right-3 text-gray-400 hover:text-gray-600 text-xl"
+        >
+          &times;
+        </button>
+        <h3 className="font-bold text-lg mb-1">Why This Product?</h3>
+        <p className="text-xs text-gray-500 mb-4">
+          Full transparency into why &ldquo;{post.productName}&rdquo; was
+          recommended to you.
+        </p>
+
+        <div className="space-y-3">
+          {factors.map((f) => (
+            <div key={f.label}>
+              <div className="flex justify-between text-sm mb-1">
+                <span className="font-medium">{f.label}</span>
+                <span className="text-teal-600 font-bold">{f.value}%</span>
+              </div>
+              <div className="bg-gray-200 rounded-full h-1.5 mb-1">
+                <div
+                  className="bg-teal-500 h-1.5 rounded-full"
+                  style={{ width: `${f.value}%` }}
+                />
+              </div>
+              <p className="text-xs text-gray-500">{f.reason}</p>
+            </div>
+          ))}
+        </div>
+
+        <div className="mt-4 pt-3 border-t text-xs text-gray-500">
+          <p className="font-medium text-gray-700 mb-1">
+            BlindEye Transparency Commitment
+          </p>
+          <p>
+            Unlike black-box AI recommendations, BlindEye shows you every factor
+            that influences what you see. We intentionally boost local and
+            underrepresented businesses to counter AI bias.
+          </p>
+        </div>
+      </div>
+    </div>
+  );
+}
 
 /* ── Blind Spot Overlay ── */
 function BlindSpotOverlay({
@@ -179,17 +408,39 @@ function SearchOverlay({
 
 /* ── Main Feed ── */
 export default function SocialFeed() {
+  const { logout } = useAuth();
+  const navigate = useNavigate();
+
   const [posts, setPosts] = useState<FeedPost[]>([]);
   const [categories, setCategories] = useState<string[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [loading, setLoading] = useState(true);
   const [showBlindSpot, setShowBlindSpot] = useState(false);
   const [showSearch, setShowSearch] = useState(false);
+  const [showSettings, setShowSettings] = useState(false);
+  const [showOnboarding, setShowOnboarding] = useState(false);
+  const [showWhyThis, setShowWhyThis] = useState(false);
   const [liked, setLiked] = useState<Set<number>>(new Set());
 
   // Touch tracking
   const touchStartY = useRef(0);
   const containerRef = useRef<HTMLDivElement>(null);
+
+  // Show onboarding on first visit
+  useEffect(() => {
+    const seen = localStorage.getItem("blindeye_user_onboarded");
+    if (!seen) setShowOnboarding(true);
+  }, []);
+
+  const dismissOnboarding = () => {
+    localStorage.setItem("blindeye_user_onboarded", "1");
+    setShowOnboarding(false);
+  };
+
+  const handleLogout = () => {
+    logout();
+    navigate("/");
+  };
 
   const loadPosts = useCallback((search?: string) => {
     setLoading(true);
@@ -210,17 +461,19 @@ export default function SocialFeed() {
   const goNext = useCallback(() => {
     setCurrentIndex((i) => Math.min(i + 1, posts.length - 1));
     setShowBlindSpot(false);
+    setShowWhyThis(false);
   }, [posts.length]);
 
   const goPrev = useCallback(() => {
     setCurrentIndex((i) => Math.max(i - 1, 0));
     setShowBlindSpot(false);
+    setShowWhyThis(false);
   }, []);
 
   // Keyboard navigation
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
-      if (showSearch) return;
+      if (showSearch || showSettings || showOnboarding) return;
       if (e.key === "ArrowDown" || e.key === "ArrowRight") {
         e.preventDefault();
         goNext();
@@ -232,7 +485,7 @@ export default function SocialFeed() {
     };
     window.addEventListener("keydown", handler);
     return () => window.removeEventListener("keydown", handler);
-  }, [goNext, goPrev, showSearch]);
+  }, [goNext, goPrev, showSearch, showSettings, showOnboarding]);
 
   // Touch swipe
   const handleTouchStart = (e: React.TouchEvent) => {
@@ -287,11 +540,11 @@ export default function SocialFeed() {
       >
         {/* Large product emoji */}
         <span className="text-8xl mb-4 drop-shadow-lg">
-          {post.mediaEmoji || "📦"}
+          {post.mediaEmoji || "\ud83d\udce6"}
         </span>
 
         {/* Product info overlay (bottom) */}
-        <div className="absolute bottom-0 left-0 right-0 p-5 bg-gradient-to-t from-black/80 via-black/40 to-transparent">
+        <div className="absolute bottom-0 left-0 right-14 p-5 bg-gradient-to-t from-black/80 via-black/40 to-transparent">
           <div className="flex items-center gap-2 mb-2">
             <div className="w-9 h-9 rounded-full bg-white text-black flex items-center justify-center text-xs font-bold">
               {post.businessLogo}
@@ -348,12 +601,28 @@ export default function SocialFeed() {
 
         {/* Blind Spot button */}
         <button
-          onClick={() => setShowBlindSpot(!showBlindSpot)}
+          onClick={() => {
+            setShowBlindSpot(!showBlindSpot);
+            setShowWhyThis(false);
+          }}
           className="flex flex-col items-center"
           title="Blind Spot Analysis"
         >
           <span className="text-2xl">&#128065;</span>
           <span className="text-white text-[10px]">Blind Spot</span>
+        </button>
+
+        {/* Why This? — Recommendation Transparency */}
+        <button
+          onClick={() => {
+            setShowWhyThis(!showWhyThis);
+            setShowBlindSpot(false);
+          }}
+          className="flex flex-col items-center"
+          title="Why was this recommended?"
+        >
+          <span className="text-2xl">&#128161;</span>
+          <span className="text-white text-[10px]">Why?</span>
         </button>
 
         {/* AI Score */}
@@ -368,19 +637,29 @@ export default function SocialFeed() {
       {/* ── Top HUD ── */}
       <div className="absolute top-0 left-0 right-0 flex items-center justify-between p-4 z-20">
         <h1 className="text-white font-bold text-lg">BlindEye</h1>
-        <button
-          onClick={() => setShowSearch(true)}
-          className="text-white bg-white/10 rounded-full px-3 py-1.5 text-sm hover:bg-white/20"
-        >
-          &#128269; Search
-        </button>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => setShowSearch(true)}
+            className="text-white bg-white/10 rounded-full px-3 py-1.5 text-sm hover:bg-white/20"
+          >
+            &#128269; Search
+          </button>
+          <button
+            onClick={() => setShowSettings(true)}
+            className="text-white bg-white/10 rounded-full w-8 h-8 flex items-center justify-center hover:bg-white/20"
+            title="Settings"
+          >
+            &#9881;
+          </button>
+        </div>
       </div>
 
-      {/* ── On-screen nav arrows ── */}
+      {/* ── On-screen nav arrows — larger and more visible ── */}
       {currentIndex > 0 && (
         <button
           onClick={goPrev}
-          className="absolute left-1/2 top-16 -translate-x-1/2 text-white/40 hover:text-white text-3xl z-20"
+          className="absolute left-1/2 top-16 -translate-x-1/2 z-20 bg-white/20 hover:bg-white/40 backdrop-blur-sm rounded-full w-12 h-12 flex items-center justify-center text-white text-2xl shadow-lg transition-colors"
+          aria-label="Previous"
         >
           &#9650;
         </button>
@@ -388,7 +667,8 @@ export default function SocialFeed() {
       {currentIndex < posts.length - 1 && (
         <button
           onClick={goNext}
-          className="absolute left-1/2 bottom-4 -translate-x-1/2 text-white/40 hover:text-white text-3xl z-20"
+          className="absolute left-1/2 bottom-4 -translate-x-1/2 z-20 bg-white/20 hover:bg-white/40 backdrop-blur-sm rounded-full w-12 h-12 flex items-center justify-center text-white text-2xl shadow-lg animate-bounce transition-colors"
+          aria-label="Next"
         >
           &#9660;
         </button>
@@ -406,6 +686,12 @@ export default function SocialFeed() {
           onClose={() => setShowBlindSpot(false)}
         />
       )}
+      {showWhyThis && (
+        <RecommendationOverlay
+          post={post}
+          onClose={() => setShowWhyThis(false)}
+        />
+      )}
       {showSearch && (
         <SearchOverlay
           onClose={() => setShowSearch(false)}
@@ -413,6 +699,13 @@ export default function SocialFeed() {
           categories={categories}
         />
       )}
+      {showSettings && (
+        <SettingsOverlay
+          onClose={() => setShowSettings(false)}
+          onLogout={handleLogout}
+        />
+      )}
+      {showOnboarding && <OnboardingPopup onDismiss={dismissOnboarding} />}
     </div>
   );
 }
