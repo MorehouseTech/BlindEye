@@ -2,7 +2,7 @@
 
 **HBCU Battle of the Brains 2026** | Morehouse College
 
-BlindEye is a dual-sided platform that tackles a problem most businesses don't even know they have: AI chatbots are already recommending (or ignoring) their products to millions of consumers, and nobody is tracking what those chatbots actually say.
+BlindEye is a two-sided platform that tackles a problem most businesses don't even know they have: AI chatbots are already recommending (or ignoring) their products to millions of consumers, and nobody is tracking what those chatbots actually say.
 
 On the **business side**, BlindEye gives companies a dashboard showing how ChatGPT, Gemini, and Claude represent their brand. It scores their AI visibility, flags hallucinated product details, and tells them exactly where they're being left out of the conversation.
 
@@ -49,12 +49,15 @@ You should get back a JSON array of posts. If you see data, the API is up.
 
 ### For Judges: Navigating the App
 
-1. Open the app and register an account (any email/password works)
-2. You'll land on the **consumer feed**. Scroll through products. Tap "Blind Spot" on a card to see the AI transparency overlay.
-3. Tap the briefcase icon in the bottom nav to switch to the **business dashboard**
-4. From the dashboard, tap "Generate AI Test" or the "AI Visibility Analytics" card
-5. On the visibility test page, type a real query like "best coffee shops in Atlanta" or click one of the suggested queries
-6. Watch the results come in across all three AI platforms with scores, hallucination flags, and raw responses
+1. Open the app and enter an account for either user or business (use the default logins specified on the login page).
+2. If you chose the user login, you'll land on the **consumer feed**. Scroll through products. Tap "Blind Spot" eye icon or the "Algorithm Transparency" lightbulb icon on a video to see the AI transparency overlay.
+3. If you're on desktop, you can resize your window to the dimensions of a typical phone to get a more immerseive experience, or just visit the url using your mobile phone.
+4. Tap the settings icon in the top right, and press log out to tes the other login.
+5. If you chose the admin login, you'll land on the **business dashboard**. Use your computer for this.
+6. From the dashboard, tap any of the components on screen to open their pages or use the navbar at the top of the screen.
+7. Try our features like the "Generate AI Test" or the "AI Visibility Analytics" cards.
+8. On the visibility test page, type a real query like "best coffee shops in Atlanta" or click one of the suggested queries.
+9. Watch the results come in across all three AI platforms with scores, hallucination flags, and raw responses.
 
 ---
 
