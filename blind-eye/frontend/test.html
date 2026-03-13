@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Blind Eye</title>
+  </head>
+  <body>
+    <div id="root"></div>
+
+
+    <h2>AI Credit Score</h2>
+    <label>Location:</label><br />
+    <input id="creditLocation" type="text" size="40" placeholder="Atlanta, GA" />
+    <br /><br />
+
+    <label>Product / Item:</label><br />
+    <input id="creditItem" type="text" size="40" placeholder="chicken sandwich" />
+    <br /><br />
+
+    <label>Reference Price (USD):</label><br />
+    <input id="creditPrice" type="number" step="0.01" placeholder="11.99" />
+    <br /><br />
+
+    <button id="creditSend">Generate Credit Score</button>
+    <button id="creditClear" type="button">Clear</button>
+
+    <h3>Result</h3>
+    <pre id="creditOutput"></pre>
+
+    <hr />
+    <h2>API Health Check</h2>
+    <button id="healthCheckButton">Check API Health</button>
+    <pre id="healthOutput"></pre>
+
+    <hr />
+
+    <script type="module">
+      const BASE_URL = "https://overcerebral-indicially-florencia.ngrok-free.dev";
+      const DEV_SECRET = "some-long-random-string";
+
+      const HEALTH_URL = `${BASE_URL}/api/health`;
+      const CREDIT_SCORE_URL = `${BASE_URL}/api/creditScore`;
+
+      const healthCheckButton = document.getElementById("healthCheckButton");
+      const healthOutput = document.getElementById("healthOutput");
+
+      const creditLocationInput = document.getElementById("creditLocation");
+      const creditItemInput = document.getElementById("creditItem");
+      const creditPriceInput = document.getElementById("creditPrice");
+      const creditOutput = document.getElementById("creditOutput");
+      const generateCreditScoreButton = document.getElementById("creditSend");
+      const clearCreditScoreButton = document.getElementById("creditClear");
+
+      async function fetchApiHealth() {
+        const response = await fetch(HEALTH_URL, {
+          method: "GET",
+          headers: {
+            "ngrok-skip-browser-warning": "true",
+          },
+        });
+
+        const responseText = await response.text();
+        if (!response.ok) throw new Error(responseText);
+
+        return JSON.parse(responseText);
+      }
+
+      async function fetchCreditScore(location, item, referencePrice) {
+        const response = await fetch(CREDIT_SCORE_URL, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "x-dev-secret": DEV_SECRET,
+            "ngrok-skip-browser-warning": "true",
+          },
+          body: JSON.stringify({
+            location,
+            item,
+            proposed_price: referencePrice,
+          }),
+        });
+
+        const responseText = await response.text();
+        if (!response.ok) throw new Error(responseText);
+
+        return JSON.parse(responseText);
+      }
+
+      healthCheckButton.onclick = async () => {
+        healthOutput.textContent = "Checking API health...";
+
+        try {
+          const healthData = await fetchApiHealth();
+          healthOutput.textContent = JSON.stringify(healthData, null, 2);
+        } catch (error) {
+          healthOutput.textContent = String(error);
+          console.error(error);
+        }
+      };
+
+      clearCreditScoreButton.onclick = () => {
+        creditLocationInput.value = "";
+        creditItemInput.value = "";
+        creditPriceInput.value = "";
+        creditOutput.textContent = "";
+      };
+
+      generateCreditScoreButton.onclick = async () => {
+        const location = creditLocationInput.value.trim();
+        const item = creditItemInput.value.trim();
+        const referencePrice = Number(creditPriceInput.value);
+
+        if (!location || !item || !Number.isFinite(referencePrice)) {
+          creditOutput.textContent = "Please fill in location, item, and a valid price.";
+          return;
+        }
+
+        creditOutput.textContent = "Generating credit score...";
+
+        try {
+          const creditScoreResponse = await fetchCreditScore(location, item, referencePrice);
+
+          creditOutput.textContent =
+            `Overall Credit Score: ${creditScoreResponse.creditScoreReport?.overallCreditScore ?? "N/A"}\n\n` +
+            `Recommendations:\n` +
+            `${(creditScoreResponse.creditScoreReport?.recommendations ?? [])
+              .map((recommendation, index) => `${index + 1}. ${recommendation}`)
+              .join("\n")}`;
+
+          // Full JSON debug output:
+          // creditOutput.textContent =
+          //   "Credit Score Report:\n" +
+          //   JSON.stringify(creditScoreResponse.creditScoreReport ?? {}, null, 2) +
+          //   "\n\nRaw LLM:\n" +
+          //   JSON.stringify(creditScoreResponse.raw_llm ?? {}, null, 2) +
+          //   "\n\nRaw Search:\n" +
+          //   JSON.stringify(creditScoreResponse.raw_search ?? {}, null, 2);
+
+        } catch (error) {
+          creditOutput.textContent = String(error);
+          console.error(error);
+        }
+      };
+    </script>
+  </body>
+</html>

@@ -5,3 +5,10 @@ flask-cors
 pymysql
 cryptography
 python-dotenv
+fastapi
+uvicorn[standard]
+pydantic
+httpx
+requests
+python-dotenv
+tavily-python
