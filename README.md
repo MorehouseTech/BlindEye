@@ -186,3 +186,20 @@ Morehouse College, HBCU Battle of the Brains 2026
 - Charles Ryans
 - Omar White-Evans
 - Kanayo Egwuekwe-Maxey
+
+## Individual Team Contributions
+
+### Charles Ryans
+- Led much of the AI integration and backend connectivity for the project
+- Helped design and build BlindScore / the AI Credit Score to measure how well businesses are represented across major AI platforms
+- Worked on the logic for comparing responses from ChatGPT, Gemini, and Claude for visibility, ranking, sentiment, and hallucinated product details
+- Built and tested the pipeline that collected responses from multiple LLMs and combined them into one business-facing analysis
+- Used Microsoft Azure AI services to deploy LLM functionality and connect it to the frontend experience
+- Contributed to the business dashboard, especially the AI Visibility Test and BlindScore-related features
+- Supported backend and API development in Flask and connected model outputs to app features
+- Helped plan the database structure and data flow for both the business dashboard and customer-facing side
+- Used JSON mapping to simulate inputs and outputs while other parts of the system were still being built, which made testing easier before full integration
+- Worked with both the frontend team and the business side to make sure the project matched customer needs and overall competition goals
+- Used ngrok early in development to securely share local API endpoints with teammates for testing and integration
+- Helped connect the frontend, backend, and AI systems into the final live demo
+
